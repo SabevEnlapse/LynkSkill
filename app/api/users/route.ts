@@ -6,6 +6,8 @@ export async function POST(req: Request) {
     const { userId, email, role } = await req.json();
 
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    if (!role || !["STUDENT", "COMPANY"].includes(role))
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
 
     const existingUser = await prisma.user.findUnique({ where: { clerkId: userId } });
     if (existingUser) return NextResponse.json(existingUser);
@@ -15,7 +17,7 @@ export async function POST(req: Request) {
             clerkId: userId,
             email,
             role,
-            profile: { create: { name: '', bio: '' } }, // optional: create empty profile
+            profile: { create: { name: '', bio: '' } }
         },
     });
 

@@ -25,10 +25,10 @@ export default function RegisterUser() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("✅ API response:", data);
+                console.log(" API response:", data);
                 setSent(true);
             })
-            .catch(err => console.error("❌ API error:", err));
+            .catch(err => console.error(" API error:", err));
     }, [isLoaded, user, sent]);
 
 

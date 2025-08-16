@@ -2,6 +2,7 @@ import PulsingBorderShader from "@/components/pulsing-border-shader"
 import { ArrowRight, Sparkles } from "lucide-react"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 import { Button } from "./ui/button"
+import Link from "next/link"
 
 export default function Component() {
     return (
@@ -36,7 +37,7 @@ export default function Component() {
                         {/* Clerk Auth Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 justify-center lg:justify-start">
                             <SignedOut>
-                                <SignUpButton>
+                                <SignUpButton forceRedirectUrl="/onboarding?role=student">
                                     <Button className="group relative overflow-hidden rounded-full px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto text-sm sm:text-base lg:text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95 min-h-[48px] sm:min-h-[56px]">
                                         {/* Gradient background */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 rounded-full" />
@@ -55,7 +56,7 @@ export default function Component() {
                                     </Button>
                                 </SignUpButton>
 
-                                <SignInButton>
+                                <SignUpButton forceRedirectUrl="/onboarding?role=company">
                                     <Button className="group relative overflow-hidden rounded-full px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto text-sm sm:text-base lg:text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95 min-h-[48px] sm:min-h-[56px]">
                                         {/* Glass morphism background */}
                                         <div className="absolute inset-0 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full" />
@@ -64,12 +65,12 @@ export default function Component() {
                                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                         {/* Button content */}
-                                        <div className="relative flex items-center justify-center text-white">Sign In</div>
+                                        <div className="relative flex items-center justify-center text-white"> Register as Company</div>
 
                                         {/* Subtle shine effect */}
                                         <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                                     </Button>
-                                </SignInButton>
+                                </SignUpButton>
                             </SignedOut>
 
                             <SignedIn>
@@ -91,6 +92,12 @@ export default function Component() {
                                     <div className="text-gray-300 text-xs sm:text-sm">Welcome back!</div>
                                 </div>
                             </SignedIn>
+                            {/*<Link href="/sign-up?role=student">*/}
+                            {/*    <button className="bg-blue-500 text-white p-2 rounded">Sign up as Student</button>*/}
+                            {/*</Link>*/}
+                            {/*<Link href="/sign-up?role=company">*/}
+                            {/*    <button className="bg-green-500 text-white p-2 rounded">Sign up as Company</button>*/}
+                            {/*</Link>*/}
                         </div>
 
                         <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 lg:gap-8 pt-6 sm:pt-8 text-xs sm:text-sm text-gray-400">
