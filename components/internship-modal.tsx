@@ -8,12 +8,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import {Internship} from "@/app/types";
 
 interface InternshipModalProps {
     open: boolean
     onClose: () => void
-    onCreate: (internship: Internship) => void
+    onCreate: (internship: any) => void
+}
+
+interface Errors {
+    title?: string[]
+    description?: string[]
+    location?: string[]
+    qualifications?: string[]
+    paid?: string[]
+    salary?: string[]
 }
 
 export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {
@@ -23,11 +31,25 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
     const [qualifications, setQualifications] = useState("")
     const [paid, setPaid] = useState(false)
     const [salary, setSalary] = useState("")
-    const [errors, setErrors] = useState<Record<string, string[]>>({})
+    const [errors, setErrors] = useState<Errors>({})
 
     async function handleSubmit() {
-        setErrors({}) // нулираме предишни грешки
+        // reset errors
+        setErrors({})
 
+        // простa валидация на фронтенд
+        const newErrors: Errors = {}
+        if (!title) newErrors.title = ["Title is required"]
+        if (!description) newErrors.description = ["Description is required"]
+        if (!location) newErrors.location = ["Location is required"]
+        if (paid && !salary) newErrors.salary = ["Salary is required for paid internships"]
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors)
+            return
+        }
+
+        // изпращане към бекенд
         const res = await fetch("/api/internships", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -45,20 +67,17 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             const data = await res.json()
             onCreate(data)
             onClose()
-            // нулираме полетата
+            // reset form
             setTitle("")
             setDescription("")
             setLocation("")
             setQualifications("")
             setPaid(false)
             setSalary("")
+            setErrors({})
         } else {
-            const data = await res.json()
-            if (data.errors) {
-                setErrors(data.errors)
-            } else {
-                alert("Failed to create internship")
-            }
+            const errData = await res.json()
+            alert(errData.message || "Failed to create internship")
         }
     }
 
@@ -78,7 +97,11 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
                     <div>
                         <Label>Description</Label>
-                        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                        <Textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="outline-none resize-none"
+                        />
                         {errors.description && <p className="text-sm text-red-500">{errors.description[0]}</p>}
                     </div>
 
@@ -110,7 +133,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button variant="outline" onClick={onClose}>
+                        Cancel
+                    </Button>
                     <Button onClick={handleSubmit}>Create</Button>
                 </DialogFooter>
             </DialogContent>
