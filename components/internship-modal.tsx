@@ -8,11 +8,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import {Internship} from "@/app/types";
 
 interface InternshipModalProps {
     open: boolean
     onClose: () => void
-    onCreate: (internship: any) => void
+    onCreate: (internship: Internship) => void
 }
 
 export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {

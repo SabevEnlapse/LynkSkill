@@ -22,11 +22,13 @@ import { AppsTabContent } from "./apps-tab-content"
 import { FilesTabContent } from "./files-tab-content"
 import { ProjectsTabContent } from "./projects-tab-content"
 import { LearnTabContent } from "./learn-tab-content"
+import {Internship} from "@/app/types"
 
 interface DashboardLayoutProps {
   userType: "Student" | "Company"
   children?: React.ReactNode
 }
+
 
 export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
   const [activeTab, setActiveTab] = useState("home")
@@ -34,18 +36,21 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [showInternshipModal, setShowInternshipModal] = useState(false)
-  const [internships, setInternships] = useState<any[]>([])
+  const [internships, setInternships] = useState<Internship[]>([])
   const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadInternships() {
       const res = await fetch("/api/internships")
-      if (res.ok) setInternships(await res.json())
+      if (res.ok) {
+        const data: Internship[] = await res.json()
+        setInternships(data)
+      }
     }
     loadInternships()
   }, [])
 
-  function handleCreateInternship(newInternship: any) {
+  function handleCreateInternship(newInternship: Internship) {
     setInternships((prev) => [newInternship, ...prev])
   }
 
