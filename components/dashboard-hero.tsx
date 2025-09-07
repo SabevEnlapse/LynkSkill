@@ -36,9 +36,9 @@ export function DashboardHero({ userType }: DashboardHeroProps) {
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
             <Badge className="bg-white/20 text-white hover:bg-white/30 rounded-xl">Premium</Badge>
-            <h2 className="text-3xl font-bold">Welcome to DesignAli Creative Suite</h2>
+            <h2 className="text-3xl font-bold">Welcome to LynkSkill</h2>
             <p className="max-w-[600px] text-white/80">
-              Unleash your creativity with our comprehensive suite of professional design tools and resources.
+              The best place to unleash your creativity, improve your skills and find your talents.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">Explore Plans</Button>
