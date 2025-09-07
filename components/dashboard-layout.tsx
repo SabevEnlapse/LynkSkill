@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-
 import { DashboardSidebar } from "./dashboard-sidebar"
 import { DashboardHeader } from "./dashboard-header"
 import { DashboardHero } from "./dashboard-hero"

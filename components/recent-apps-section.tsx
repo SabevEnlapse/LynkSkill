@@ -3,10 +3,18 @@
 import {motion} from "framer-motion"
 import {useEffect, useState} from "react"
 import {Star} from "lucide-react"
-import {Internship} from "@/app/types";
+import {Internship} from "@/app/types"
 import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
 import {CardSkeleton} from "@/components/card-skeleton"
+import {InternshipDetailsModal} from "@/components/internship-details-modal"
 
 interface RecentAppsSectionProps {
     userType: "Student" | "Company"
@@ -15,6 +23,9 @@ interface RecentAppsSectionProps {
 
 export function RecentAppsSection({userType, internships = []}: RecentAppsSectionProps) {
     const [isLoading, setIsLoading] = useState(true)
+    const [internshipList, setInternshipList] = useState<Internship[]>(internships)
+    const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null)
+
     const sectionTitle = userType === "Company" ? "My Recent Internship" : "Recent Apps"
 
     useEffect(() => {
@@ -24,7 +35,7 @@ export function RecentAppsSection({userType, internships = []}: RecentAppsSectio
         return () => clearTimeout(timer)
     }, [])
 
-    const items = internships
+    const items = internshipList
 
     return (
         <section className="space-y-4">
@@ -38,8 +49,11 @@ export function RecentAppsSection({userType, internships = []}: RecentAppsSectio
                 {isLoading
                     ? Array.from({length: 3}).map((_, i) => <CardSkeleton key={i}/>)
                     : items.map((item: Internship) => (
-                        <motion.div key={item.id} whileHover={{scale: 1.02, y: -5}}
-                                    whileTap={{scale: 0.98}}>
+                        <motion.div
+                            key={item.id}
+                            whileHover={{scale: 1.02, y: -5}}
+                            whileTap={{scale: 0.98}}
+                        >
                             <Card
                                 className="flex flex-col overflow-hidden rounded-3xl border-2 hover:border-primary/50 transition-all duration-300 h-full">
                                 <CardHeader className="pb-2">
@@ -56,26 +70,44 @@ export function RecentAppsSection({userType, internships = []}: RecentAppsSectio
 
                                 <CardContent className="flex-1 flex flex-col w-full gap-2 break-words">
                                     <CardTitle className="text-lg">{item.title}</CardTitle>
-                                    <CardDescription
-                                        className="text-sm text-muted-foreground">{item.description}</CardDescription>
-                                    {userType === "Company" && (
-                                        <div className="mt-1 text-sm text-muted-foreground">
-                                            📍 {item.location} {item.paid && `• 💰 ${item.salary ?? "Negotiable"}`}
-                                        </div>
-                                    )}
+                                    <CardDescription className="text-sm text-muted-foreground">
+                                        {item.description}
+                                    </CardDescription>
+
+                                    {/* Always show location, qualifications, salary */}
+                                    <div className="mt-1 text-sm text-muted-foreground">
+                                        📍 {item.location}
+                                        {item.qualifications && ` • 🎓 ${item.qualifications}`}
+                                        {item.paid && ` • 💰 ${item.salary ?? "Negotiable"}`}
+                                    </div>
                                 </CardContent>
 
                                 <CardFooter>
-                                    <Button variant="secondary" className="w-full rounded-2xl">
+                                    <Button
+                                        variant="secondary"
+                                        className="w-full rounded-2xl"
+                                        onClick={() => setSelectedInternship(item)}
+                                    >
                                         {userType === "Company" ? "Manage" : "Open"}
                                     </Button>
                                 </CardFooter>
                             </Card>
-                        </motion.div>
 
+                            {/* Modal */}
+                            <InternshipDetailsModal
+                                open={!!selectedInternship && selectedInternship.id === item.id}
+                                onClose={() => setSelectedInternship(null)}
+                                internship={selectedInternship}
+                                userType={userType}
+                                onUpdate={(updated: Internship) =>
+                                    setInternshipList((prev: Internship[]) =>
+                                        prev.map((i: Internship) => (i.id === updated.id ? updated : i))
+                                    )
+                                }
+                            />
+                        </motion.div>
                     ))}
             </div>
         </section>
     )
 }
-
