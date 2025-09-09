@@ -1,7 +1,12 @@
 "use client"
 
-import { DashboardLayout } from "@/components/dashboard-layout"
+import {DashboardLayout} from "@/components/dashboard-layout"
+import RequireAuth from "@/components/RequireAuth"
 
 export default function StudentDashboard() {
-  return <DashboardLayout userType="Student" />
+    return (
+        <RequireAuth>
+            <DashboardLayout userType="Student"/>
+        </RequireAuth>
+    )
 }

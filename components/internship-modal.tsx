@@ -39,10 +39,19 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
         // простa валидация на фронтенд
         const newErrors: Errors = {}
-        if (!title) newErrors.title = ["Title is required"]
-        if (!description) newErrors.description = ["Description is required"]
-        if (!location) newErrors.location = ["Location is required"]
-        if (paid && !salary) newErrors.salary = ["Salary is required for paid internships"]
+
+        if (!title || title.length < 3) {
+            newErrors.title = ["Title must be at least 3 characters"]
+        }
+        if (!description || description.length < 10) {
+            newErrors.description = ["Description must be at least 10 characters"]
+        }
+        if (!location || location.length < 2) {
+            newErrors.location = ["Location must be at least 2 characters"]
+        }
+        if (paid && (!salary || parseFloat(salary) <= 0)) {
+            newErrors.salary = ["Salary is required and must be positive for paid internships"]
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)

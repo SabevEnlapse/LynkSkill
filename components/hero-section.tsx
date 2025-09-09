@@ -36,7 +36,7 @@ export default function Component() {
                         {/* Clerk Auth Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 justify-center lg:justify-start">
                             <SignedOut>
-                                <SignUpButton forceRedirectUrl="/onboarding?role=student">
+                                <SignUpButton forceRedirectUrl="/redirect-after-signin">
                                     <Button className="group relative overflow-hidden rounded-full px-6 py-3 sm:px-8 sm:py-4 w-full sm:w-auto text-sm sm:text-base lg:text-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95 min-h-[48px] sm:min-h-[56px]">
                                         {/* Gradient background */}
                                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 rounded-full" />

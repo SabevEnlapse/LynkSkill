@@ -8,58 +8,65 @@ export async function completeOnboarding(formData: FormData) {
     const { userId } = await auth()
     if (!userId) return { error: 'No logged in user' }
 
-    const roleInput = formData.get('role') as string
-    const role = roleInput.toUpperCase() === 'COMPANY' ? 'COMPANY' : 'STUDENT' // matches Prisma enum
+    const roleInput = (formData.get('role') as string) || ''
+    const role = roleInput.toUpperCase() === 'COMPANY' ? 'COMPANY' : 'STUDENT'
 
     try {
-        // Update Clerk user metadata
+        // Update Clerk public metadata (uppercase role + onboardingComplete)
         await clerkClient.users.updateUser(userId, {
-            publicMetadata: { onboardingComplete: true, role: roleInput },
+            publicMetadata: { role, onboardingComplete: true },
         })
 
         // Get Clerk user email
         const clerkUser = await clerkClient.users.getUser(userId)
         const email =
-            clerkUser.emailAddresses.find(
-                (e) => e.id === clerkUser.primaryEmailAddressId
-            )?.emailAddress || ''
+            clerkUser.emailAddresses.find((e) => e.id === clerkUser.primaryEmailAddressId)
+                ?.emailAddress || ''
 
-        // Upsert user in Prisma
+        // Upsert user in Prisma with onboardingComplete true
         const user = await prisma.user.upsert({
             where: { clerkId: userId },
-            update: { role },
+            update: { role, onboardingComplete: true },
             create: {
                 clerkId: userId,
                 email,
                 role,
+                onboardingComplete: true,
+                profile: { create: { name: clerkUser.firstName ?? '', bio: '' } },
             },
         })
 
-        // If user is a company, create company record
+        // If company: create company record (once)
         if (role === 'COMPANY') {
-            const companyName = formData.get('companyName') as string
-            const companyDescription = formData.get('companyDescription') as string
-            const companyLocation = formData.get('companyLocation') as string
-            const companyWebsite = formData.get('companyWebsite') as string | null
+            const companyName = (formData.get('companyName') as string) || ''
+            const companyDescription = (formData.get('companyDescription') as string) || ''
+            const companyLocation = (formData.get('companyLocation') as string) || ''
+            const companyWebsite = (formData.get('companyWebsite') as string) || null
 
             if (!companyName || !companyDescription || !companyLocation) {
-                return { error: 'Please provide all required company details' }
+                return { error: 'Please fill company name, description and location' }
             }
 
-            await prisma.company.create({
-                data: {
-                    name: companyName,
-                    description: companyDescription,
-                    location: companyLocation,
-                    website: companyWebsite || null,
-                    ownerId: user.id,
-                },
-            })
+            // Avoid duplicate company for same user
+            const existing = await prisma.company.findFirst({ where: { ownerId: user.id } })
+            if (!existing) {
+                await prisma.company.create({
+                    data: {
+                        name: companyName,
+                        description: companyDescription,
+                        location: companyLocation,
+                        website: companyWebsite,
+                        ownerId: user.id,
+                    },
+                })
+            }
         }
 
-        return { message: 'Onboarding complete' }
+        // return dashboard path the client should navigate to
+        const dashboard = role === 'COMPANY' ? '/dashboard/company' : '/dashboard/student'
+        return { message: 'Onboarding complete', dashboard }
     } catch (err) {
-        console.error('Onboarding error:', err)
+        console.error('completeOnboarding error', err)
         return { error: 'Error completing onboarding' }
     }
 }

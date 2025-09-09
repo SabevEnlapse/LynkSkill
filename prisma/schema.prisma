@@ -9,12 +9,13 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  clerkId   String    @unique
-  email     String
-  role      Role // <-- use enum instead of String
-  profile   Profile?
-  companies Company[]
+  id                 String    @id @default(cuid())
+  clerkId            String    @unique
+  email              String
+  role               Role
+  onboardingComplete Boolean   @default(false) // <-- add this
+  profile            Profile?
+  companies          Company[]
 }
 
 model Company {

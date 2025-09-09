@@ -11,232 +11,125 @@ import { GraduationCap, Building2, ArrowRight, CheckCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { useTransition } from "react"
 
 export default function OnboardingPage() {
+    const { user, isLoaded } = useUser()
+    const router = useRouter()
+    const [isPending, startTransition] = useTransition()
     const [error, setError] = React.useState("")
     const [selectedRole, setSelectedRole] = React.useState<string>("")
-    const [isLoading, setIsLoading] = React.useState(false)
-    const { user } = useUser()
-    const router = useRouter()
 
-    const roles = [
-        {
-            value: "student",
-            title: "Student",
-            description: "Access learning resources, track progress, and connect with peers",
-            icon: GraduationCap,
-            features: ["Course Materials", "Progress Tracking", "Peer Network", "Study Tools"],
-            gradient: "from-blue-500/10 to-cyan-500/10",
-            iconBg: "bg-blue-500/10",
-            iconColor: "text-blue-600",
-            borderColor: "border-blue-200/50",
-        },
-        {
-            value: "company",
-            title: "Company",
-            description: "Manage teams, access enterprise features, and drive business growth",
-            icon: Building2,
-            features: ["Team Management", "Analytics Dashboard", "Enterprise Tools", "Priority Support"],
-            gradient: "from-purple-500/10 to-pink-500/10",
-            iconBg: "bg-purple-500/10",
-            iconColor: "text-purple-600",
-            borderColor: "border-purple-200/50",
-        },
-    ]
+    // If already onboarded — redirect away immediately
+    React.useEffect(() => {
+        if (!isLoaded || !user) return
+            ;(async () => {
+            try {
+                const res = await fetch("/api/get-role", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ clerkId: user.id }),
+                })
+                const data = await res.json()
+                if (data?.onboardingComplete) {
+                    // already finished onboarding: navigate to their dashboard
+                    const dest = data.role === "COMPANY" ? "/dashboard/company" : "/dashboard/student"
+                    router.replace(dest)
+                }
+            } catch (err) {
+                // ignore — allow user to onboard
+                console.error(err)
+            }
+        })()
+    }, [isLoaded, user, router])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setIsLoading(true)
         setError("")
 
         const formData = new FormData(e.currentTarget)
 
-        try {
+        startTransition(async () => {
             const res = await completeOnboarding(formData)
-            if (res?.message) {
+            if (res?.dashboard) {
+                // refresh Clerk user session on the client
                 await user?.reload()
-                // ✅ Redirect correctly based on role
-                router.push(selectedRole === "company" ? "/dashboard/company" : "/dashboard/student")
+                router.push(res.dashboard)
+            } else if (res?.error) {
+                setError(res.error)
+            } else {
+                setError("Unknown error")
             }
-            if (res?.error) setError(res.error)
-        } catch {
-            setError("An unexpected error occurred. Please try again.")
-        } finally {
-            setIsLoading(false)
-        }
+        })
     }
+
+    const roles = [
+        { value: "student", title: "Student", description: "Access learning resources, track progress, and connect with peers", icon: GraduationCap },
+        { value: "company", title: "Company", description: "Manage teams and post internships", icon: Building2 },
+    ]
 
     return (
         <div className="min-h-screen bg-background p-6">
             <div className="max-w-4xl mx-auto mb-12 text-center">
-                <h1 className="text-4xl font-bold text-foreground mb-4 text-balance">Welcome! Let's get you started</h1>
-                <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-                    Choose your role to customize your experience and unlock the features that matter most to you.
-                </p>
+                <h1 className="text-4xl font-bold text-foreground mb-4">Welcome — choose a role</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
-                    {roles.map((role) => {
-                        const Icon = role.icon
-                        const isSelected = selectedRole === role.value
+                    {roles.map((r) => {
+                        const Icon = r.icon
+                        const isSelected = selectedRole === r.value
                         return (
-                            <Card
-                                key={role.value}
-                                className={`cursor-pointer transition-all duration-300 hover:shadow-lg group relative overflow-hidden ${
-                                    isSelected
-                                        ? "ring-2 ring-primary shadow-xl border-primary bg-gradient-to-br from-primary/5 to-primary/10"
-                                        : `border hover:border-muted-foreground/20 bg-gradient-to-br ${role.gradient}`
-                                }`}
-                                onClick={() => setSelectedRole(role.value)}
-                            >
-                                <CardHeader className="space-y-4 pb-4">
-                                    <div className="flex justify-between items-start">
-                                        <div
-                                            className={`p-4 rounded-2xl transition-all duration-300 ${
-                                                isSelected
-                                                    ? "bg-primary text-primary-foreground shadow-lg"
-                                                    : `${role.iconBg} ${role.iconColor} group-hover:scale-110`
-                                            }`}
-                                        >
-                                            <Icon className="w-7 h-7" />
-                                        </div>
-                                        {isSelected && (
-                                            <Badge variant="default" className="flex items-center gap-1.5">
-                                                <CheckCircle className="w-3 h-3" />
-                                                Selected
-                                            </Badge>
-                                        )}
+                            <Card key={r.value} onClick={() => setSelectedRole(r.value)} className={`cursor-pointer p-4 ${isSelected ? "ring-2 ring-primary" : ""}`}>
+                                <CardHeader>
+                                    <div className="flex justify-between items-center">
+                                        <div className={`p-3 rounded-xl ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted"}`}><Icon className="w-6 h-6" /></div>
+                                        {isSelected && <Badge>Selected</Badge>}
                                     </div>
-                                    <div className="space-y-2">
-                                        <CardTitle className="text-2xl font-bold text-foreground">{role.title}</CardTitle>
-                                        <CardDescription className="text-muted-foreground text-base leading-relaxed">
-                                            {role.description}
-                                        </CardDescription>
-                                    </div>
+                                    <CardTitle>{r.title}</CardTitle>
+                                    <CardDescription>{r.description}</CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-3 pt-0">
-                                    <div className="space-y-3">
-                                        {role.features.map((feature, i) => (
-                                            <div key={i} className="flex items-center gap-3 text-sm text-foreground/80">
-                                                <div
-                                                    className={`w-2 h-2 rounded-full transition-colors ${
-                                                        isSelected ? "bg-primary" : "bg-muted-foreground/40"
-                                                    }`}
-                                                />
-                                                <span className="font-medium">{feature}</span>
-                                            </div>
-                                        ))}
-                                    </div>
+                                <CardContent>
+                                    <input type="radio" name="role" value={r.value} checked={isSelected} onChange={() => setSelectedRole(r.value)} className="sr-only" required />
                                 </CardContent>
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value={role.value}
-                                    checked={isSelected}
-                                    onChange={() => setSelectedRole(role.value)}
-                                    className="sr-only"
-                                    required
-                                />
                             </Card>
                         )
                     })}
                 </div>
 
                 {selectedRole === "company" && (
-                    <Card className="bg-background border shadow-sm">
-                        <CardHeader className="pb-6">
-                            <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                                <Building2 className="w-5 h-5 text-primary" />
-                                Company Information
-                            </CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Tell us about your company to personalize your experience
-                            </CardDescription>
+                    <Card className="p-4">
+                        <CardHeader>
+                            <CardTitle>Company information</CardTitle>
+                            <CardDescription>We need these to create your company</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="companyName" className="text-sm font-medium text-foreground">
-                                        Company Name *
-                                    </Label>
-                                    <Input
-                                        id="companyName"
-                                        type="text"
-                                        name="companyName"
-                                        placeholder="Enter your company name"
-                                        className="bg-background border-input"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="companyLocation" className="text-sm font-medium text-foreground">
-                                        Location *
-                                    </Label>
-                                    <Input
-                                        id="companyLocation"
-                                        type="text"
-                                        name="companyLocation"
-                                        placeholder="City, Country"
-                                        className="bg-background border-input"
-                                        required
-                                    />
-                                </div>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <Label>Company name</Label>
+                                <Input name="companyName" required />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="companyDescription" className="text-sm font-medium text-foreground">
-                                    Description *
-                                </Label>
-                                <Textarea
-                                    id="companyDescription"
-                                    name="companyDescription"
-                                    placeholder="Describe what your company does..."
-                                    className="bg-background border-input min-h-[100px] resize-none"
-                                    required
-                                />
+                            <div>
+                                <Label>Description</Label>
+                                <Textarea name="companyDescription" required />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="companyWebsite" className="text-sm font-medium text-foreground">
-                                    Website <span className="text-muted-foreground">(Optional)</span>
-                                </Label>
-                                <Input
-                                    id="companyWebsite"
-                                    type="url"
-                                    name="companyWebsite"
-                                    placeholder="https://example.com"
-                                    className="bg-background border-input"
-                                />
+                            <div>
+                                <Label>Location</Label>
+                                <Input name="companyLocation" required />
+                            </div>
+                            <div>
+                                <Label>Website (optional)</Label>
+                                <Input name="companyWebsite" />
                             </div>
                         </CardContent>
                     </Card>
                 )}
 
-                {error && (
-                    <Card className="border-destructive/50 bg-destructive/5">
-                        <CardContent className="pt-6">
-                            <p className="text-destructive text-sm font-medium">{error}</p>
-                        </CardContent>
-                    </Card>
-                )}
+                {error && <p className="text-red-500">{error}</p>}
 
-                <div className="flex justify-center pt-4">
-                    <Button
-                        type="submit"
-                        disabled={!selectedRole || isLoading}
-                        size="lg"
-                        className="min-w-[200px] h-12 text-base font-semibold"
-                    >
-                        {isLoading ? (
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                Processing...
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                Continue
-                                <ArrowRight className="w-4 h-4" />
-                            </div>
-                        )}
+                <div className="flex justify-center">
+                    <Button type="submit" disabled={!selectedRole || isPending}>
+                        {isPending ? "Processing..." : "Continue"}
+                        <ArrowRight className="ml-2" />
                     </Button>
                 </div>
             </form>
