@@ -3,27 +3,44 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    try {
-        const { userId } = await auth();
-        if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { userId } = await auth()
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 })
 
-        const { internshipId } = await req.json();
-        if (!internshipId) return NextResponse.json({ error: "internshipId is required" }, { status: 400 });
-
-        const student = await prisma.user.findUnique({ where: { clerkId: userId } });
-        if (!student) return NextResponse.json({ error: "Student not found" }, { status: 404 });
-
-        const application = await prisma.application.create({
-            data: {
-                studentId: student.id,
-                internshipId,
-            },
-            include: { internship: { include: { company: true } } },
-        });
-
-        return NextResponse.json(application, { status: 201 });
-    } catch (err) {
-        console.error(err);
-        return NextResponse.json({ error: "Failed to apply" }, { status: 500 });
+    const student = await prisma.user.findUnique({ where: { clerkId: userId } })
+    if (!student || student.role !== "STUDENT") {
+        return new NextResponse("Forbidden", { status: 403 })
     }
+
+    const { internshipId } = await req.json()
+    if (!internshipId) {
+        return NextResponse.json({ error: "Internship ID required" }, { status: 400 })
+    }
+
+    // 🔎 Check if already applied
+    const existing = await prisma.application.findUnique({
+        where: {
+            internshipId_studentId: {
+                internshipId,
+                studentId: student.id,
+            },
+        },
+    })
+
+    if (existing) {
+        return NextResponse.json(
+            { error: "You have already applied to this internship" },
+            { status: 400 }
+        )
+    }
+
+    // ✅ Create new application
+    const application = await prisma.application.create({
+        data: {
+            studentId: student.id,
+            internshipId,
+        },
+    })
+
+    return NextResponse.json(application)
 }
+
