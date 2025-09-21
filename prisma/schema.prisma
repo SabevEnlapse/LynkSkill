@@ -20,6 +20,7 @@ model User {
   profile            Profile?
   companies          Company[]     // companies owned by user
   applications       Application[] @relation("StudentApplications") // applications made by student
+  portfolio          Portfolio?    // ✅ relation back to Portfolio
 }
 
 // ---------------------
@@ -84,6 +85,20 @@ model Application {
   student      User       @relation("StudentApplications", fields: [studentId], references: [id])
 
   @@unique([internshipId, studentId]) // prevent duplicate applications
+}
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String   @unique
+
+  skills     String[]  // Array of skills
+  interests  String[]  // Array of interests
+  experience String?   // Free text bio
+  projects   Json?     // JSON for {title, description, link} objects
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ---------------------

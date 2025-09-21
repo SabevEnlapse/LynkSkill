@@ -27,3 +27,17 @@ export interface Application {
     }
 }
 
+export interface Portfolio {
+    id: string
+    studentId: string
+    skills: string[]
+    interests: string[]
+    experience?: string | null
+    projects?: {
+        title: string
+        description?: string
+        link?: string
+    }[]
+    createdAt: string
+    updatedAt: string
+}

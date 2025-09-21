@@ -16,7 +16,7 @@ import {RecentAppsSection} from "./recent-apps-section"
 import {RecentFilesSection} from "./recent-files-section"
 import {ActiveProjectsSection} from "./active-projects-section"
 import {CommunityHighlightsSection} from "./community-highlights-section"
-import {AppsTabContent} from "./apps-tab-content"
+import {Portfolio} from "./portfolio"
 import {ApplicationsTabContent} from "./apply-tab-content"
 import {ProjectsTabContent} from "./projects-tab-content"
 import {LearnTabContent} from "./learn-tab-content"
@@ -293,7 +293,7 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                     </TabsContent>
 
                                     <TabsContent value="apps" className="space-y-8 mt-0">
-                                        <AppsTabContent userType={userType}/>
+                                        <Portfolio userType={userType}/>
                                     </TabsContent>
 
                                     <TabsContent value="files" className="space-y-8 mt-0">
