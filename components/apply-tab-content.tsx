@@ -171,7 +171,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
       <div className="space-y-8">
         <div className="relative overflow-hidden">
           <div className="bg-gradient-to-r from-[var(--application-header-gradient-from)] to-[var(--application-header-gradient-to)] rounded-2xl p-8 shadow-[0_20px_50px_var(--application-shadow-medium)]">
-            <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 rounded-3xl"></div>
             <div className="relative flex items-center justify-between">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">

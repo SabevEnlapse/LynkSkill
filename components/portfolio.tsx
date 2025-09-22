@@ -260,8 +260,8 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <h1 className="text-5xl font-bold mb-2">{displayName}</h1>
-                          <p className="text-white/90 text-xl font-medium">
+                          <h1 className="text-3xl font-bold mb-2">{displayName}</h1>
+                          <p className="text-white/90 text-lg font-medium">
                             {portfolio?.headline || "Professional Portfolio"}
                           </p>
                         </div>
