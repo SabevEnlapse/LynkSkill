@@ -9,10 +9,19 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 
+interface Internship {
+    title: string
+    description: string
+    location: string
+    qualifications: string | null
+    paid: boolean
+    salary: number | null
+}
+
 interface InternshipModalProps {
     open: boolean
     onClose: () => void
-    onCreate: (internship: any) => void
+    onCreate: (internship: Internship) => void
 }
 
 interface Errors {

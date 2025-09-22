@@ -32,7 +32,15 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
   const [loading, setLoading] = useState(true)
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
   const [showPortfolio, setShowPortfolio] = useState(false)
-  const [showCompany, setShowCompany] = useState<any | null>(null)
+  const [showCompany, setShowCompany] = useState<{
+    id: string;
+    name: string;
+    description?: string;
+    location?: string;
+    website?: string;
+    email?: string; // 👈 add this
+  } | null>(null)
+
 
   useEffect(() => {
     async function loadApplications() {
@@ -146,7 +154,13 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
               if (typeof item === "string") return <li key={idx}>{item}</li>
               if (typeof item === "object" && item !== null) {
                 // Example: education objects
-                const obj = item as Record<string, any>
+                interface EducationRecord {
+                    degree?: string;
+                    school?: string;
+                    startYear?: string | number;
+                    endYear?: string | number;
+                }
+                const obj = item as EducationRecord
                 return (
                     <li key={idx}>
                       {obj.degree && <span className="font-medium">{obj.degree}</span>} {obj.school && `at ${obj.school}`}{" "}
@@ -178,11 +192,11 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                   <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                     <TrendingUp className="w-6 h-6 text-white" />
                   </div>
-                  <h1 className="text-4xl font-bold text-white tracking-tight">
+                  <h1 className="text-3xl font-bold text-white tracking-tight">
                     {userType === "Student" ? "My Applications" : "Received Applications"}
                   </h1>
                 </div>
-                <p className="text-white/80 text-lg font-medium">
+                <p className="text-white/80 font-medium">
                   {userType === "Student"
                       ? "Track your internship applications and their status"
                       : "Review and manage incoming applications"}
@@ -648,7 +662,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                           </h3>
                           <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4">
                             <p className="text-sm text-foreground font-medium">
-                              Your application has been submitted to this company. You'll be notified of any status updates
+                              Your application has been submitted to this company. You&apos;ll be notified of any status updates
                               via email.
                             </p>
                           </div>
