@@ -11,6 +11,7 @@ export interface Internship {
 }
 
 export interface Application {
+    createdAt: number;
     id: string
     status: "PENDING" | "APPROVED" | "REJECTED"
     studentId: string
@@ -27,17 +28,23 @@ export interface Application {
     }
 }
 
-// export interface Portfolio {
-//     id: string
-//     studentId: string
-//     skills: string[]
-//     interests: string[]
-//     experience?: string | null
-//     projects?: {
-//         title: string
-//         description?: string
-//         link?: string
-//     }[]
-//     createdAt: string
-//     updatedAt: string
-// }
+export interface Portfolio {
+    id: string
+    studentId: string
+    fullName: string
+    headline?: string
+    age?: number
+    bio?: string
+    skills?: string[]
+    interests?: string[]
+    experience?: string
+    education?: string
+    projects?: string
+    certifications?: string
+    linkedin?: string
+    github?: string
+    portfolioUrl?: string
+    approvalStatus: "PENDING" | "APPROVED" | "REJECTED"
+    createdAt: string
+    updatedAt: string
+}
