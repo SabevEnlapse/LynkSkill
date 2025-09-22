@@ -102,6 +102,19 @@
   --application-rejected: oklch(0.577 0.245 27.325);
   --application-rejected-foreground: oklch(0.985 0 0);
   --application-card-hover: oklch(0.97 0 0);
+
+  --internship-modal-gradient-from: oklch(54.1% 0.281 293.009);
+  --internship-modal-gradient-to: oklch(54.6% 0.245 262.881);
+  --internship-form-background: oklch(0.985 0 0);
+  --internship-field-focus: oklch(0.488 0.243 264.376);
+  --internship-success: oklch(0.769 0.188 70.08);
+  --internship-warning: oklch(0.828 0.189 84.429);
+  --internship-error: oklch(0.577 0.245 27.325);
+  --internship-shadow-light: oklch(0 0 0 / 5%);
+  --internship-shadow-medium: oklch(0 0 0 / 10%);
+  --internship-shadow-heavy: oklch(0 0 0 / 15%);
+
+
 }
 
 .dark {
@@ -162,6 +175,17 @@
   --application-rejected: oklch(0.704 0.191 22.216);
   --application-rejected-foreground: oklch(0.985 0 0);
   --application-card-hover: oklch(0.269 0 0);
+
+  --internship-modal-gradient-from: oklch(54.1% 0.281 293.009);
+  --internship-modal-gradient-to: oklch(54.6% 0.245 262.881);
+  --internship-form-background: oklch(0.269 0 0);
+  --internship-field-focus: oklch(0.488 0.243 264.376);
+  --internship-success: oklch(0.769 0.188 70.08);
+  --internship-warning: oklch(0.828 0.189 84.429);
+  --internship-error: oklch(0.704 0.191 22.216);
+  --internship-shadow-light: oklch(1 0 0 / 5%);
+  --internship-shadow-medium: oklch(1 0 0 / 10%);
+  --internship-shadow-heavy: oklch(1 0 0 / 15%);
 }
 
 @layer base {

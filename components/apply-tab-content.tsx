@@ -119,7 +119,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
         return {
           icon: CheckCircle,
           className:
-              "bg-[var(--application-approved)] text-[var(--application-approved-foreground)] shadow-lg shadow-[var(--application-approved)]/25",
+              "bg-green-600 text-[var(--application-approved-foreground)] shadow-lg shadow-[var(--application-approved)]/25",
           label: "Approved",
           gradient: "from-green-500/20 to-emerald-500/20",
         }
@@ -127,7 +127,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
         return {
           icon: XCircle,
           className:
-              "bg-[var(--application-rejected)] text-[var(--application-rejected-foreground)] shadow-lg shadow-[var(--application-rejected)]/25",
+              "bg-red-600 text-[var(--application-rejected-foreground)] shadow-lg shadow-[var(--application-rejected)]/25",
           label: "Rejected",
           gradient: "from-red-500/20 to-rose-500/20",
         }
@@ -290,7 +290,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                                     <Button
                                         size="sm"
                                         onClick={() => updateApplication(app.id, "APPROVED")}
-                                        className="flex-1 bg-[var(--application-approved)] hover:bg-[var(--application-approved)]/90 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                                        className="flex-1 bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                                     >
                                       <CheckCircle className="w-4 h-4 mr-2" />
                                       Approve
@@ -310,7 +310,7 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                                   size="sm"
                                   variant="outline"
                                   onClick={() => viewPortfolio(app.studentId)}
-                                  className="w-full border-2 border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200 font-semibold"
+                                  className="w-full flex-1 border-2 border-primary/20 text-primary hover:bg-primary transition-all duration-200 font-semibold"
                               >
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Portfolio
