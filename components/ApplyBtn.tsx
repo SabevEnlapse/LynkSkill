@@ -33,7 +33,7 @@ export default function ApplyButton({ internshipId, onApplied }: ApplyButtonProp
 
     return (
         <Button
-            className="rounded-2xl"
+            className="flex-1 rounded-2xl"
             disabled={loading || applied}
             onClick={handleApply}
         >

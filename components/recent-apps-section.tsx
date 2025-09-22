@@ -127,27 +127,38 @@ export function RecentAppsSection({ userType, internships = [] }: RecentAppsSect
                                             </div>
                                         </CardContent>
 
-                                        <CardFooter className="w-fit">
+                                        <CardFooter className="w-full flex justify-between items-center gap-2">
                                             {userType === "Student" ? (
-                                                app ? (
+                                                <div className="flex gap-2 w-full">
+                                                    {app ? (
+                                                        <Button
+                                                            variant={
+                                                                app.status === "APPROVED"
+                                                                    ? "default"
+                                                                    : app.status === "REJECTED"
+                                                                        ? "destructive"
+                                                                        : "outline"
+                                                            }
+                                                            disabled
+                                                            className="flex-1 rounded-2xl"
+                                                        >
+                                                            {app.status === "PENDING" && "Applied ✅"}
+                                                            {app.status === "APPROVED" && "Approved 🎉"}
+                                                            {app.status === "REJECTED" && "Rejected ❌"}
+                                                        </Button>
+                                                    ) : (
+                                                        <ApplyButton internshipId={item.id}/>
+                                                    )}
+
+                                                    {/* New button for student */}
                                                     <Button
-                                                        variant={
-                                                            app.status === "APPROVED"
-                                                                ? "default"
-                                                                : app.status === "REJECTED"
-                                                                    ? "destructive"
-                                                                    : "outline"
-                                                        }
-                                                        disabled
-                                                        className="w-full rounded-2xl"
+                                                        variant="secondary"
+                                                        className="flex-1 rounded-2xl"
+                                                        onClick={() => setSelectedInternship(item)}
                                                     >
-                                                        {app.status === "PENDING" && "Applied ✅"}
-                                                        {app.status === "APPROVED" && "Approved 🎉"}
-                                                        {app.status === "REJECTED" && "Rejected ❌"}
+                                                        See More
                                                     </Button>
-                                                ) : (
-                                                    <ApplyButton internshipId={item.id} />
-                                                )
+                                                </div>
                                             ) : (
                                                 <Button
                                                     variant="secondary"
