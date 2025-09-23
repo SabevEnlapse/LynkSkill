@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-// ✅ GET /api/portfolio/me
+// ✅ GET /api/portfolio
 export async function GET() {
     try {
         const { userId } = await auth()
@@ -48,19 +48,20 @@ export async function POST(req: Request) {
                 skills: body.skills,
                 interests: body.interests,
                 experience: body.experience,
-                education: body.education,
-                projects: body.projects,
-                certifications: body.certifications,
+                education: body.education, // Now includes attachments array
+                projects: body.projects, // Now includes attachments array
+                certifications: body.certifications, // Now includes attachments array
                 linkedin: body.linkedin,
                 github: body.github,
                 portfolioUrl: body.portfolioUrl,
-                approvalStatus: "APPROVED",
+                approvalStatus: needsApproval ? "PENDING" : "APPROVED",
+                needsApproval: needsApproval,
             },
             create: {
                 student: {
                     connect: {
-                        id: student.id
-                    }
+                        id: student.id,
+                    },
                 },
                 fullName: body.fullName,
                 headline: body.headline,
@@ -69,15 +70,16 @@ export async function POST(req: Request) {
                 skills: body.skills,
                 interests: body.interests,
                 experience: body.experience,
-                education: body.education,
-                projects: body.projects,
-                certifications: body.certifications,
+                education: body.education, // Now includes attachments array
+                projects: body.projects, // Now includes attachments array
+                certifications: body.certifications, // Now includes attachments array
                 linkedin: body.linkedin,
                 github: body.github,
                 portfolioUrl: body.portfolioUrl,
-                approvalStatus: "APPROVED",
+                approvalStatus: needsApproval ? "PENDING" : "APPROVED",
+                needsApproval: needsApproval,
             },
-        });
+        })
 
         return NextResponse.json(portfolio)
     } catch (err) {

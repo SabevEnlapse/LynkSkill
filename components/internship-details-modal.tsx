@@ -273,7 +273,7 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                                             animate={{ opacity: 1, x: 0 }}
                                                             className="text-sm text-red-500 flex items-center gap-1"
                                                         >
-                                                            ⚠️ {errors.salary[0]}
+                                                            ��️ {errors.salary[0]}
                                                         </motion.p>
                                                     )}
                                                 </motion.div>
@@ -296,7 +296,7 @@ export function InternshipDetailsModal({ open, onClose, internship, userType, on
                                     <Button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="rounded-xl px-8 py-3 font-semibold bg-gradient-to-r from-[var(--internship-modal-gradient-from)] to-[var(--internship-modal-gradient-to)] text-foreground hover:scale-105 hover:shadow-lg  transition-all hover:duration-400 min-w-[120px]"
+                                        className="rounded-xl px-8 py-3 font-semibold bg-gradient-to-r from-[var(--internship-modal-gradient-from)] to-[var(--internship-modal-gradient-to)] hover:shadow-lg transition-all duration-300 min-w-[120px]"
                                     >
                                         {isSaving ? (
                                             <div className="flex items-center gap-2">

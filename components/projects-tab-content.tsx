@@ -44,9 +44,9 @@ export function ProjectsTabContent() {
         setError("Invalid API response")
         setProjects([])
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to fetch /api/projects", err)
-      setError(err?.message ?? "Failed to fetch projects")
+      setError(err instanceof Error ? err.message : "Failed to fetch projects")
       setProjects([])
     } finally {
       setLoading(false)
