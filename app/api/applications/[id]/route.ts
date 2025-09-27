@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@clerk/nextjs/server"
 
 export async function PATCH(
-    req: NextRequest,
+    req: Request,
     { params }: { params: { id: string } }
 ) {
     try {
@@ -24,6 +24,9 @@ export async function PATCH(
         return NextResponse.json(updatedApplication)
     } catch (error) {
         console.error(error)
-        return NextResponse.json({ error: "Failed to update application" }, { status: 500 })
+        return NextResponse.json(
+            { error: "Failed to update application" },
+            { status: 500 }
+        )
     }
 }
