@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import type { Application, Portfolio } from "@/app/types"
 import {
   Building2,
@@ -21,6 +22,9 @@ import {
   Star,
   Sparkles,
   TrendingUp,
+  RefreshCw,
+  Search,
+  Layers,
 } from "lucide-react"
 
 interface ApplicationsTabContentProps {
@@ -33,28 +37,39 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
   const [showPortfolio, setShowPortfolio] = useState(false)
   const [showCompany, setShowCompany] = useState<{
-    id: string;
-    name: string;
-    description?: string;
-    location?: string;
-    website?: string;
-    email?: string; // 👈 add this
+    id: string
+    name: string
+    description?: string
+    location?: string
+    website?: string
+    email?: string // 👈 add this
   } | null>(null)
 
+  const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filter, setFilter] = useState<"all" | "recent">("all")
+
+  const loadApplications = useCallback(async () => {
+    setLoading(true)
+    const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
+
+    const res = await fetch(url)
+    if (res.ok) {
+      const data: Application[] = await res.json()
+      setApplications(data)
+    }
+    setLoading(false)
+  }, [userType])
 
   useEffect(() => {
-    async function loadApplications() {
-      const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
-
-      const res = await fetch(url)
-      if (res.ok) {
-        const data: Application[] = await res.json()
-        setApplications(data)
-      }
-      setLoading(false)
-    }
     loadApplications()
-  }, [userType])
+  }, [loadApplications])
+
+  async function handleRefresh() {
+    setRefreshing(true)
+    await loadApplications()
+    setRefreshing(false)
+  }
 
   async function updateApplication(id: string, status: "APPROVED" | "REJECTED") {
     const res = await fetch(`/api/applications/${id}`, {
@@ -155,10 +170,10 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
               if (typeof item === "object" && item !== null) {
                 // Example: education objects
                 interface EducationRecord {
-                    degree?: string;
-                    school?: string;
-                    startYear?: string | number;
-                    endYear?: string | number;
+                  degree?: string
+                  school?: string
+                  startYear?: string | number
+                  endYear?: string | number
                 }
                 const obj = item as EducationRecord
                 return (
@@ -180,6 +195,33 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
 
     return String(field)
   }
+
+  const filteredApplications = applications.filter((application) => {
+    const searchLower = searchQuery.toLowerCase()
+    const internshipTitle = application.internship?.title?.toLowerCase() || ""
+    const companyName = application.internship?.company?.name?.toLowerCase() || ""
+    const studentName = application.student?.profile?.name?.toLowerCase() || ""
+    const studentEmail = application.student?.email?.toLowerCase() || ""
+    const status = application.status.toLowerCase()
+
+    return (
+        internshipTitle.includes(searchLower) ||
+        companyName.includes(searchLower) ||
+        studentName.includes(searchLower) ||
+        studentEmail.includes(searchLower) ||
+        status.includes(searchLower)
+    )
+  })
+
+  const now = Date.now()
+  const finalApplications =
+      filter === "recent"
+          ? filteredApplications.filter((app) => {
+            const createdAt = new Date(app.createdAt || Date.now()).getTime()
+            const diffDays = (now - createdAt) / (1000 * 60 * 60 * 24)
+            return diffDays <= 5
+          })
+          : filteredApplications
 
   return (
       <div className="space-y-8">
@@ -212,129 +254,217 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
-            {applications.map((app, index) => {
-              const statusConfig = getStatusConfig(app.status)
-              const StatusIcon = statusConfig.icon
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button
+              variant={filter === "all" ? "default" : "outline"}
+              className="rounded-2xl"
+              onClick={() => setFilter("all")}
+          >
+            <Layers className="mr-2 h-4 w-4" />
+            All Applications
+          </Button>
 
-              return (
-                  <motion.div
-                      key={app.id}
-                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                      transition={{
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                      whileHover={{
-                        y: -8,
-                        scale: 1.02,
-                        transition: { duration: 0.2, type: "spring", stiffness: 400 },
-                      }}
-                      className="group relative overflow-hidden bg-gradient-to-br from-[var(--application-card-gradient-from)] to-[var(--application-card-gradient-to)] rounded-2xl p-6 shadow-[0_8px_30px_var(--application-shadow-light)] hover:shadow-[0_20px_50px_var(--application-shadow-medium)] border border-border/50 transition-all duration-300"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <Button
+              variant={filter === "recent" ? "default" : "outline"}
+              className="rounded-2xl"
+              onClick={() => setFilter("recent")}
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Recent
+          </Button>
 
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="flex-1 space-y-2">
-                          <h3 className="font-bold text-card-foreground text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">
-                            {app.internship?.title || "Untitled Position"}
-                          </h3>
-                          <div className="flex items-center text-muted-foreground text-sm">
-                            {userType === "Student" ? (
-                                <>
-                                  <div className="p-1.5 bg-primary/10 rounded-lg mr-2">
-                                    <Building2 className="w-4 h-4 text-primary" />
-                                  </div>
-                                  <span className="font-medium">{app.internship?.company?.name || "Unknown Company"}</span>
-                                </>
-                            ) : (
-                                <>
-                                  <div className="p-1.5 bg-primary/10 rounded-lg mr-2">
-                                    <User className="w-4 h-4 text-primary" />
-                                  </div>
-                                  <span className="font-medium">
-                              {app.student?.profile?.name || app.student?.email || "Unknown Student"}
-                            </span>
-                                </>
-                            )}
-                          </div>
-                        </div>
-                        <div
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${statusConfig.className} backdrop-blur-sm`}
+          <div className="flex-1"></div>
+          <div className="relative w-full md:w-auto mt-3 md:mt-0">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+                type="search"
+                placeholder="Search applications..."
+                className="w-full rounded-2xl pl-9 md:w-[250px] border-2 focus:border-primary transition-colors"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              className="rounded-2xl"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+
+        {finalApplications.length === 0 ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
+              <div className="relative mb-8">
+                <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-full w-24 h-24 flex items-center justify-center mx-auto shadow-lg">
+                  <Briefcase className="w-12 h-12 text-muted-foreground" />
+                </div>
+                <div className="absolute -top-2 -right-2 bg-primary/20 rounded-full p-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                {searchQuery
+                    ? "No applications match your search"
+                    : userType === "Student"
+                        ? "No applications yet"
+                        : "No applications received"}
+              </h3>
+              <p className="text-muted-foreground text-lg max-w-md mx-auto">
+                {searchQuery ? (
+                    <>
+                      Try adjusting your search terms or{" "}
+                      <button onClick={() => setSearchQuery("")} className="text-primary underline">
+                        clear search
+                      </button>
+                    </>
+                ) : userType === "Student" ? (
+                    "Start applying to internships to see them here"
+                ) : (
+                    "Applications will appear here when students apply"
+                )}
+              </p>
+            </motion.div>
+        ) : (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold">
+                  {searchQuery
+                      ? `Search Results (${finalApplications.length})`
+                      : `${filter === "recent" ? "Recent " : ""}Applications (${finalApplications.length})`}
+                </h2>
+              </div>
+
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence>
+                  {finalApplications.map((app, index) => {
+                    const statusConfig = getStatusConfig(app.status)
+                    const StatusIcon = statusConfig.icon
+
+                    return (
+                        <motion.div
+                            key={app.id}
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                            transition={{
+                              delay: index * 0.1,
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
+                            whileHover={{
+                              y: -8,
+                              scale: 1.02,
+                              transition: { duration: 0.2, type: "spring", stiffness: 400 },
+                            }}
+                            className="group relative overflow-hidden bg-gradient-to-br from-[var(--application-card-gradient-from)] to-[var(--application-card-gradient-to)] rounded-2xl p-6 shadow-[0_8px_30px_var(--application-shadow-light)] hover:shadow-[0_20px_50px_var(--application-shadow-medium)] border border-border/50 transition-all duration-300"
                         >
-                          <StatusIcon className="w-4 h-4" />
-                          {statusConfig.label}
-                        </div>
-                      </div>
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                      <div className="flex items-center text-muted-foreground text-sm mb-6">
-                        <div className="p-1.5 bg-muted/20 rounded-lg mr-2">
-                          <Calendar className="w-4 h-4" />
-                        </div>
-                        <span className="font-medium">
-                      Applied {new Date(app.createdAt || Date.now()).toLocaleDateString()}
-                    </span>
-                      </div>
+                          <div className="relative z-10">
+                            <div className="flex items-start justify-between mb-6">
+                              <div className="flex-1 space-y-2">
+                                <h3 className="font-bold text-card-foreground text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+                                  {app.internship?.title || "Untitled Position"}
+                                </h3>
+                                <div className="flex items-center text-muted-foreground text-sm">
+                                  {userType === "Student" ? (
+                                      <>
+                                        <div className="p-1.5 bg-primary/10 rounded-lg mr-2">
+                                          <Building2 className="w-4 h-4 text-primary" />
+                                        </div>
+                                        <span className="font-medium">
+                                  {app.internship?.company?.name || "Unknown Company"}
+                                </span>
+                                      </>
+                                  ) : (
+                                      <>
+                                        <div className="p-1.5 bg-primary/10 rounded-lg mr-2">
+                                          <User className="w-4 h-4 text-primary" />
+                                        </div>
+                                        <span className="font-medium">
+                                  {app.student?.profile?.name || app.student?.email || "Unknown Student"}
+                                </span>
+                                      </>
+                                  )}
+                                </div>
+                              </div>
+                              <div
+                                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${statusConfig.className} backdrop-blur-sm`}
+                              >
+                                <StatusIcon className="w-4 h-4" />
+                                {statusConfig.label}
+                              </div>
+                            </div>
 
-                      <div className="flex gap-3">
-                        {userType === "Company" && (
-                            <>
-                              {app.status === "PENDING" && (
+                            <div className="flex items-center text-muted-foreground text-sm mb-6">
+                              <div className="p-1.5 bg-muted/20 rounded-lg mr-2">
+                                <Calendar className="w-4 h-4" />
+                              </div>
+                              <span className="font-medium">
+                          Applied {new Date(app.createdAt || Date.now()).toLocaleDateString()}
+                        </span>
+                            </div>
+
+                            <div className="flex gap-3">
+                              {userType === "Company" && (
                                   <>
-                                    <Button
-                                        size="sm"
-                                        onClick={() => updateApplication(app.id, "APPROVED")}
-                                        className="flex-1 bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
-                                    >
-                                      <CheckCircle className="w-4 h-4 mr-2" />
-                                      Approve
-                                    </Button>
+                                    {app.status === "PENDING" && (
+                                        <>
+                                          <Button
+                                              size="sm"
+                                              onClick={() => updateApplication(app.id, "APPROVED")}
+                                              className="flex-1 bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                                          >
+                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                            Approve
+                                          </Button>
+                                          <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => updateApplication(app.id, "REJECTED")}
+                                              className="flex-1 border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)] transition-all duration-200 font-semibold"
+                                          >
+                                            <XCircle className="w-4 h-4 mr-2" />
+                                            Reject
+                                          </Button>
+                                        </>
+                                    )}
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => updateApplication(app.id, "REJECTED")}
-                                        className="flex-1 border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)] transition-all duration-200 font-semibold"
+                                        onClick={() => viewPortfolio(app.studentId)}
+                                        className="w-full flex-1 border-2 border-primary/20 text-primary hover:bg-primary transition-all duration-200 font-semibold"
                                     >
-                                      <XCircle className="w-4 h-4 mr-2" />
-                                      Reject
+                                      <Eye className="w-4 h-4 mr-2" />
+                                      View Portfolio
                                     </Button>
                                   </>
                               )}
-                              <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => viewPortfolio(app.studentId)}
-                                  className="w-full flex-1 border-2 border-primary/20 text-primary hover:bg-primary transition-all duration-200 font-semibold"
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Portfolio
-                              </Button>
-                            </>
-                        )}
-                        {userType === "Student" && (
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="w-full bg-muted/50 border-border/50 font-semibold"
-                                onClick={() => setShowCompany(app.internship?.company || null)}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Details
-                            </Button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-              )
-            })}
-          </AnimatePresence>
-        </div>
+                              {userType === "Student" && (
+                                  <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="w-full bg-muted/50 border-border/50 font-semibold"
+                                      onClick={() => setShowCompany(app.internship?.company || null)}
+                                  >
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    View Details
+                                  </Button>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
+              </div>
+            </>
+        )}
 
         <AnimatePresence>
           {showPortfolio && portfolio && (
@@ -662,8 +792,8 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
                           </h3>
                           <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4">
                             <p className="text-sm text-foreground font-medium">
-                              Your application has been submitted to this company. You&apos;ll be notified of any status updates
-                              via email.
+                              Your application has been submitted to this company. You&apos;ll be notified of any status
+                              updates via email.
                             </p>
                           </div>
                         </motion.div>
@@ -674,27 +804,6 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
               </motion.div>
           )}
         </AnimatePresence>
-
-        {applications.length === 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
-              <div className="relative mb-8">
-                <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-full w-24 h-24 flex items-center justify-center mx-auto shadow-lg">
-                  <Briefcase className="w-12 h-12 text-muted-foreground" />
-                </div>
-                <div className="absolute -top-2 -right-2 bg-primary/20 rounded-full p-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold text-foreground mb-3">
-                {userType === "Student" ? "No applications yet" : "No applications received"}
-              </h3>
-              <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                {userType === "Student"
-                    ? "Start applying to internships to see them here"
-                    : "Applications will appear here when students apply"}
-              </p>
-            </motion.div>
-        )}
       </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { motion } from "framer-motion"
 import { useUser } from "@clerk/nextjs"
 import {
@@ -18,6 +18,9 @@ import {
   Download,
   Sparkles,
   Users,
+  RefreshCw,
+  Search,
+  Layers,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -25,6 +28,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input" // Added Input import
 import { StudentSummary } from "@/components/student-summary"
 
 type Experience = {
@@ -60,30 +64,44 @@ export default function ExperienceTabContent() {
   const [dragActive, setDragActive] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
 
+  const [refreshing, setRefreshing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filter, setFilter] = useState<"all" | "recent">("all")
+
+  const loadExperiences = useCallback(async () => {
+    if (!role) return
+    setLoading(true)
+    try {
+      const res = await fetch("/api/experience")
+      if (!res.ok) throw new Error("Failed to load experiences")
+      const data = await res.json()
+
+      if (Array.isArray(data)) {
+        setExperiences(data)
+        setSummary(null)
+      } else {
+        setExperiences(Array.isArray(data.experiences) ? data.experiences : [])
+        setSummary(data.summary || null)
+      }
+    } catch (err) {
+      console.error(err)
+      setExperiences([])
+      setSummary(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [role])
+
   // ✅ Fetch experiences + summary
   useEffect(() => {
-    if (!role) return
-    const fetchExperiences = async () => {
-      try {
-        const res = await fetch("/api/experience")
-        if (!res.ok) throw new Error("Failed to load experiences")
-        const data = await res.json()
+    loadExperiences()
+  }, [loadExperiences])
 
-        if (Array.isArray(data)) {
-          setExperiences(data)
-          setSummary(null)
-        } else {
-          setExperiences(Array.isArray(data.experiences) ? data.experiences : [])
-          setSummary(data.summary || null)
-        }
-      } catch (err) {
-        console.error(err)
-        setExperiences([])
-        setSummary(null)
-      }
-    }
-    fetchExperiences()
-  }, [role])
+  async function handleRefresh() {
+    setRefreshing(true)
+    await loadExperiences()
+    setRefreshing(false)
+  }
 
   // ✅ Fetch companies (only for students)
   useEffect(() => {
@@ -207,6 +225,25 @@ export default function ExperienceTabContent() {
   const getFileIcon = (url: string) =>
       url.match(/\.(mp4|mov|avi)$/i) ? <FileVideo className="h-4 w-4" /> : <FileImage className="h-4 w-4" />
 
+  const filteredExperiences = experiences.filter((experience) => {
+    const searchLower = searchQuery.toLowerCase()
+    const companyName = experience.company?.name?.toLowerCase() || ""
+    const studentEmail = experience.student?.email?.toLowerCase() || ""
+    const status = experience.status.toLowerCase()
+
+    return companyName.includes(searchLower) || studentEmail.includes(searchLower) || status.includes(searchLower)
+  })
+
+  const now = Date.now()
+  const finalExperiences =
+      filter === "recent"
+          ? filteredExperiences.filter((exp) => {
+            const createdAt = new Date(exp.createdAt).getTime()
+            const diffDays = (now - createdAt) / (1000 * 60 * 60 * 24)
+            return diffDays <= 5
+          })
+          : filteredExperiences
+
   // ✅ Loading state
   if (!role) {
     return (
@@ -241,9 +278,7 @@ export default function ExperienceTabContent() {
                       : "Review and evaluate student submissions, providing valuable feedback on their professional experiences."}
                 </p>
                 {/* Student summary only visible if role === "STUDENT" and summary exists */}
-                {summary && role === "STUDENT" && (
-                    <StudentSummary summary={summary} />
-                )}
+                {summary && role === "STUDENT" && <StudentSummary summary={summary} />}
               </div>
               <div className="flex items-center gap-4 text-white/80">
                 <div className="flex items-center gap-2">
@@ -262,6 +297,48 @@ export default function ExperienceTabContent() {
             </div>
           </motion.div>
         </section>
+
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button
+              variant={filter === "all" ? "default" : "outline"}
+              className="rounded-2xl"
+              onClick={() => setFilter("all")}
+          >
+            <Layers className="mr-2 h-4 w-4" />
+            All Experiences
+          </Button>
+
+          <Button
+              variant={filter === "recent" ? "default" : "outline"}
+              className="rounded-2xl"
+              onClick={() => setFilter("recent")}
+          >
+            <Clock className="mr-2 h-4 w-4" />
+            Recent
+          </Button>
+
+          <div className="flex-1"></div>
+          <div className="relative w-full md:w-auto mt-3 md:mt-0">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+                type="search"
+                placeholder="Search experiences..."
+                className="w-full rounded-2xl pl-9 md:w-[250px] border-2 focus:border-[var(--experience-accent)] transition-colors"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              className="rounded-2xl"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
 
         {/* Upload Section - Students Only */}
         {role === "STUDENT" && (
@@ -410,134 +487,183 @@ export default function ExperienceTabContent() {
             <h3 className="text-xl font-semibold">{role === "STUDENT" ? "Your Experiences" : "Student Submissions"}</h3>
           </div>
 
-          {experiences.length === 0 ? (
+          {loading ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="rounded-3xl animate-pulse">
+                      <CardHeader>
+                        <div className="h-6 bg-muted rounded w-3/4"></div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                        <div className="h-4 bg-muted rounded w-2/3"></div>
+                        <div className="h-6 bg-muted rounded w-20"></div>
+                        <div className="h-3 bg-muted rounded w-1/3"></div>
+                      </CardContent>
+                    </Card>
+                ))}
+              </div>
+          ) : finalExperiences.length === 0 ? (
               <Card className="rounded-3xl border-2 border-dashed border-[var(--experience-step-border)] p-12 text-center">
                 <div className="space-y-3">
                   <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                     <Building2 className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div>
-                    <h4 className="font-medium">{role === "STUDENT" ? "No experiences yet" : "No submissions yet"}</h4>
+                    <h4 className="font-medium">
+                      {searchQuery
+                          ? "No experiences match your search"
+                          : role === "STUDENT"
+                              ? "No experiences yet"
+                              : "No submissions yet"}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      {role === "STUDENT"
-                          ? "Upload your first experience to get started"
-                          : "Student submissions will appear here for review"}
+                      {searchQuery ? (
+                          <>
+                            Try adjusting your search terms or{" "}
+                            <button onClick={() => setSearchQuery("")} className="text-primary underline">
+                              clear search
+                            </button>
+                          </>
+                      ) : role === "STUDENT" ? (
+                          "Upload your first experience to get started"
+                      ) : (
+                          "Student submissions will appear here for review"
+                      )}
                     </p>
                   </div>
                 </div>
               </Card>
           ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {experiences.map((exp, index) => (
-                    <motion.div
-                        key={exp.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        whileHover={{ scale: 1.02, y: -5 }}
-                        whileTap={{ scale: 0.98 }}
-                    >
-                      <Card className="overflow-hidden rounded-3xl border border-[var(--experience-card-shadow)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)] hover:shadow-lg hover:shadow-[var(--experience-card-shadow-hover)] transition-all duration-300 group">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 border-2 border-[var(--experience-accent)]/20">
-                                <AvatarFallback className="bg-[var(--experience-accent)]/10 text-[var(--experience-accent)] font-semibold">
-                                  {role === "STUDENT"
-                                      ? exp.company?.name?.charAt(0) || "?"
-                                      : exp.student?.email?.charAt(0).toUpperCase() || "?"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <CardTitle className="text-base group-hover:text-[var(--experience-accent)] transition-colors">
-                                  {role === "STUDENT"
-                                      ? exp.company?.name || "Unknown Company"
-                                      : exp.student?.email || "Unknown Student"}
-                                </CardTitle>
-                                <CardDescription className="text-xs">
-                                  {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : "Recently"}
-                                </CardDescription>
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold">
+                    {searchQuery
+                        ? `Search Results (${finalExperiences.length})`
+                        : `${filter === "recent" ? "Recent " : ""}Experiences (${finalExperiences.length})`}
+                  </h2>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {finalExperiences.map((exp, index) => (
+                      <motion.div
+                          key={exp.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          whileHover={{ scale: 1.02, y: -5 }}
+                          whileTap={{ scale: 0.98 }}
+                      >
+                        <Card className="overflow-hidden rounded-3xl border border-[var(--experience-card-shadow)] bg-gradient-to-br from-[var(--experience-card-gradient-from)] to-[var(--experience-card-gradient-to)] hover:shadow-lg hover:shadow-[var(--experience-card-shadow-hover)] transition-all duration-300 group">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10 border-2 border-[var(--experience-accent)]/20">
+                                  <AvatarFallback className="bg-[var(--experience-accent)]/10 text-[var(--experience-accent)] font-semibold">
+                                    {role === "STUDENT"
+                                        ? exp.company?.name?.charAt(0) || "?"
+                                        : exp.student?.email?.charAt(0).toUpperCase() || "?"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <CardTitle className="text-base group-hover:text-[var(--experience-accent)] transition-colors">
+                                    {role === "STUDENT"
+                                        ? exp.company?.name || "Unknown Company"
+                                        : exp.student?.email || "Unknown Student"}
+                                  </CardTitle>
+                                  <CardDescription className="text-xs">
+                                    {exp.createdAt ? new Date(exp.createdAt).toLocaleDateString() : "Recently"}
+                                  </CardDescription>
+                                </div>
                               </div>
+                              <Badge className={`rounded-xl text-xs ${getStatusColor(exp.status)}`}>
+                                {exp.status === "approved" && <CheckCircle className="h-3 w-3 mr-1" />}
+                                {exp.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
+                                {exp.status === "rejected" && <AlertCircle className="h-3 w-3 mr-1" />}
+                                {exp.status}
+                              </Badge>
                             </div>
-                            <Badge className={`rounded-xl text-xs ${getStatusColor(exp.status)}`}>
-                              {exp.status === "approved" && <CheckCircle className="h-3 w-3 mr-1" />}
-                              {exp.status === "pending" && <Clock className="h-3 w-3 mr-1" />}
-                              {exp.status === "rejected" && <AlertCircle className="h-3 w-3 mr-1" />}
-                              {exp.status}
-                            </Badge>
-                          </div>
-                        </CardHeader>
+                          </CardHeader>
 
-                        <CardContent className="space-y-4">
-                          {/* Media Preview */}
-                          {exp.mediaUrls.length > 0 && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium">Media Files</span>
-                                  <Badge variant="outline" className="rounded-xl text-xs">
-                                    {exp.mediaUrls.length} files
-                                  </Badge>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {exp.mediaUrls.slice(0, 4).map((url, i) => (
-                                      <div key={i} className="relative group/media">
-                                        {url.endsWith(".mp4") || url.endsWith(".mov") ? (
-                                            <div className="aspect-square rounded-xl bg-gradient-to-br from-[var(--experience-accent)]/20 to-[var(--experience-accent)]/10 flex items-center justify-center border border-[var(--experience-step-border)]">
-                                              <FileVideo className="h-6 w-6 text-[var(--experience-accent)]" />
-                                            </div>
-                                        ) : (
-                                            <img
-                                                src={url || "/placeholder.svg"}
-                                                alt={`Experience ${i + 1}`}
-                                                className="aspect-square w-full object-cover rounded-xl border border-[var(--experience-step-border)]"
-                                            />
-                                        )}
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/media:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-1">
-                                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-white hover:bg-white/20">
-                                            <Eye className="h-4 w-4" />
-                                          </Button>
-                                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-white hover:bg-white/20">
-                                            <Download className="h-4 w-4" />
-                                          </Button>
+                          <CardContent className="space-y-4">
+                            {/* Media Preview */}
+                            {exp.mediaUrls.length > 0 && (
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium">Media Files</span>
+                                    <Badge variant="outline" className="rounded-xl text-xs">
+                                      {exp.mediaUrls.length} files
+                                    </Badge>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {exp.mediaUrls.slice(0, 4).map((url, i) => (
+                                        <div key={i} className="relative group/media">
+                                          {url.endsWith(".mp4") || url.endsWith(".mov") ? (
+                                              <div className="aspect-square rounded-xl bg-gradient-to-br from-[var(--experience-accent)]/20 to-[var(--experience-accent)]/10 flex items-center justify-center border border-[var(--experience-step-border)]">
+                                                <FileVideo className="h-6 w-6 text-[var(--experience-accent)]" />
+                                              </div>
+                                          ) : (
+                                              <img
+                                                  src={url || "/placeholder.svg"}
+                                                  alt={`Experience ${i + 1}`}
+                                                  className="aspect-square w-full object-cover rounded-xl border border-[var(--experience-step-border)]"
+                                              />
+                                          )}
+                                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/media:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-1">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                                            >
+                                              <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0 text-white hover:bg-white/20"
+                                            >
+                                              <Download className="h-4 w-4" />
+                                            </Button>
+                                          </div>
                                         </div>
-                                      </div>
-                                  ))}
+                                    ))}
+                                  </div>
+                                  {exp.mediaUrls.length > 4 && (
+                                      <p className="text-xs text-muted-foreground text-center">
+                                        +{exp.mediaUrls.length - 4} more files
+                                      </p>
+                                  )}
                                 </div>
-                                {exp.mediaUrls.length > 4 && (
-                                    <p className="text-xs text-muted-foreground text-center">
-                                      +{exp.mediaUrls.length - 4} more files
-                                    </p>
-                                )}
-                              </div>
-                          )}
+                            )}
 
-                          {/* Company Actions */}
-                          {role === "COMPANY" && exp.status === "pending" && (
-                              <div className="flex gap-2 pt-2">
-                                <Button
-                                    size="sm"
-                                    onClick={() => handleAction(exp.id, "approve")}
-                                    className="flex-1 bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleAction(exp.id, "reject")}
-                                    className="flex-1"
-                                >
-                                  <AlertCircle className="h-4 w-4 mr-1" />
-                                  Reject
-                                </Button>
-                              </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                ))}
-              </div>
+                            {/* Company Actions */}
+                            {role === "COMPANY" && exp.status === "pending" && (
+                                <div className="flex gap-2 pt-2">
+                                  <Button
+                                      size="sm"
+                                      onClick={() => handleAction(exp.id, "approve")}
+                                      className="flex-1 bg-[var(--experience-success)] hover:bg-[var(--experience-success)]/90 text-white"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleAction(exp.id, "reject")}
+                                      className="flex-1"
+                                  >
+                                    <AlertCircle className="h-4 w-4 mr-1" />
+                                    Reject
+                                  </Button>
+                                </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                  ))}
+                </div>
+              </>
           )}
         </section>
       </div>
