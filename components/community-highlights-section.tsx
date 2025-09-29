@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { FileImage, FileVideo, Download, Eye, Sparkles, Users, TrendingUp } from "lucide-react"
+import { FileImage, FileVideo, Download, Sparkles, Users, TrendingUp } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -116,13 +116,23 @@ export function CommunityHighlights() {
                             >
                                 <Card className="overflow-hidden rounded-3xl border border-border bg-card hover:shadow-lg hover:shadow-muted/50 transition-all duration-300 group">
                                     <div className="relative">
-                                        <div className="aspect-square bg-muted flex items-center justify-center border-b border-border">
-                                            {getFileIcon(file.url)}
+                                        <div className="aspect-square bg-muted flex items-center justify-center border-b border-border overflow-hidden">
+                                            {file.url.match(/\.(mp4|mov|avi)$/) ? (
+                                                <video
+                                                    src={file.url}
+                                                    className="h-full w-full object-cover"
+                                                    controls={false}
+                                                    muted
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={file.url}
+                                                    alt="Community file"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            )}
                                         </div>
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-white hover:bg-white/20">
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
@@ -140,8 +150,8 @@ export function CommunityHighlights() {
                                                 {getFileType(file.url)}
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
-                        {new Date(file.createdAt).toLocaleDateString()}
-                      </span>
+                                                {new Date(file.createdAt).toLocaleDateString()}
+                                            </span>
                                         </div>
 
                                         <div>
