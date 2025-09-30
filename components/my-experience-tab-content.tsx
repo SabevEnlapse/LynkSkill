@@ -657,7 +657,7 @@ export default function ExperienceTabContent() {
                                         </div>
                                         <DialogTitle className="text-2xl text-center">Approve Experience</DialogTitle>
                                         <p className="text-sm text-muted-foreground text-center">
-                                          Select a grade to evaluate the student's performance
+                                          Select a grade to evaluate the student&apos;s performance
                                         </p>
                                       </DialogHeader>
 

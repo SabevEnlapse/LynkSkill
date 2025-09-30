@@ -8,6 +8,9 @@ export interface Internship {
     paid: boolean
     salary?: number | null
     createdAt: string
+    duration?: string
+    grade?: string | number
+    skills?: string
 }
 
 export interface Application {

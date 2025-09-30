@@ -1,17 +1,17 @@
 "use client"
 
-import type React from "react"
-import { useRef, useState, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { ComponentType, SVGProps } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { Internship } from "@/app/types"
-import { Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle } from "lucide-react"
+import React, {useEffect} from "react"
+import {useRef, useState, useCallback} from "react"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog"
+import {Input} from "@/components/ui/input"
+import {Textarea} from "@/components/ui/textarea"
+import {Button} from "@/components/ui/button"
+import {Label} from "@/components/ui/label"
+import {Checkbox} from "@/components/ui/checkbox"
+import type {ComponentType, SVGProps} from "react"
+import {motion, AnimatePresence} from "framer-motion"
+import type {Internship} from "@/app/types"
+import {Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle} from "lucide-react"
 
 interface InternshipFormData {
     title: string
@@ -37,22 +37,58 @@ interface Errors {
     salary?: string[]
 }
 
-export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {
-    // Use refs for the form fields so the inputs stay uncontrolled (caret won't jump)
+interface FormValues {
+    title: string
+    description: string
+    location: string
+    qualifications: string
+    salary: string
+}
+
+export function InternshipModal({open, onClose, onCreate}: InternshipModalProps) {
     const titleRef = useRef<HTMLInputElement | null>(null)
     const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
     const locationRef = useRef<HTMLInputElement | null>(null)
     const qualificationsRef = useRef<HTMLInputElement | null>(null)
     const salaryRef = useRef<HTMLInputElement | null>(null)
 
-    // UI state
     const [paid, setPaid] = useState(false)
     const [errors, setErrors] = useState<Errors>({})
     const [isLoading, setIsLoading] = useState(false)
+    const [formValues, setFormValues] = useState<FormValues>({
+        title: "",
+        description: "",
+        location: "",
+        qualifications: "",
+        salary: ""
+    })
 
-    // Helper to read current values from refs
+    // Update refs when form values change
+    useEffect(() => {
+        if (titleRef.current) titleRef.current.value = formValues.title
+        if (descriptionRef.current) descriptionRef.current.value = formValues.description
+        if (locationRef.current) locationRef.current.value = formValues.location
+        if (qualificationsRef.current) qualificationsRef.current.value = formValues.qualifications
+        if (salaryRef.current) salaryRef.current.value = formValues.salary
+    }, [formValues])
+
+    // Reset form when modal closes
+    useEffect(() => {
+        if (!open) {
+            setFormValues({
+                title: "",
+                description: "",
+                location: "",
+                qualifications: "",
+                salary: ""
+            })
+            setPaid(false)
+            setErrors({})
+        }
+    }, [open])
+
     const readValues = useCallback(() => {
-        return {
+        const values = {
             title: titleRef.current?.value ?? "",
             description: descriptionRef.current?.value ?? "",
             location: locationRef.current?.value ?? "",
@@ -60,11 +96,21 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
             paid,
             salary: salaryRef.current?.value ?? "",
         }
+
+        // Save form values
+        setFormValues({
+            title: values.title,
+            description: values.description,
+            location: values.location,
+            qualifications: values.qualifications,
+            salary: values.salary
+        })
+
+        return values
     }, [paid])
 
     async function handleSubmit() {
         setIsLoading(true)
-
         const vals = readValues()
         const newErrors: Errors = {}
 
@@ -99,7 +145,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
 
             const res = await fetch("/api/internships", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(body),
             })
 
@@ -107,12 +153,14 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                 const data: Internship = await res.json()
                 onCreate(data)
                 onClose()
-
-                if (titleRef.current) titleRef.current.value = ""
-                if (descriptionRef.current) descriptionRef.current.value = ""
-                if (locationRef.current) locationRef.current.value = ""
-                if (qualificationsRef.current) qualificationsRef.current.value = ""
-                if (salaryRef.current) salaryRef.current.value = ""
+                // Reset form
+                setFormValues({
+                    title: "",
+                    description: "",
+                    location: "",
+                    qualifications: "",
+                    salary: ""
+                })
                 setPaid(false)
                 setErrors({})
             } else {
@@ -127,6 +175,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         }
     }
 
+
     // Form field wrapper
     const FormField = ({
                            label,
@@ -139,21 +188,21 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
         error?: string[]
         children: React.ReactNode
     }) => (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-medium text-slate-200">
-                <Icon className="h-4 w-4" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                <Icon className="h-4 w-4" style={{color: "var(--internship-modal-gradient-from)"}}/>
                 {label}
             </Label>
             {children}
             <AnimatePresence>
                 {error && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{opacity: 0, height: 0}}
+                        animate={{opacity: 1, height: "auto"}}
+                        exit={{opacity: 0, height: 0}}
                         className="flex items-center gap-2 text-sm text-red-400"
                     >
-                        <AlertCircle className="h-3 w-3" />
+                        <AlertCircle className="h-3 w-3"/>
                         {error[0]}
                     </motion.div>
                 )}
@@ -181,13 +230,13 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                     <DialogHeader className="relative">
                         <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-white">
                             <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
-                                <Briefcase className="h-6 w-6" />
+                                <Briefcase className="h-6 w-6"/>
                             </div>
                             Create New Internship
                         </DialogTitle>
                         <p className="text-white/80 text-sm">Fill in the details to create an internship opportunity</p>
                     </DialogHeader>
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl"/>
                 </div>
 
                 <div className="bg-slate-900 p-8 rounded-b-2xl">
@@ -195,7 +244,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <FormField label="Internship Title" icon={Briefcase} error={errors.title}>
                             <Input
                                 ref={titleRef}
-                                defaultValue=""
+                                defaultValue={formValues.title}
                                 placeholder="e.g., Software Development Intern"
                                 className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
                                 style={
@@ -211,7 +260,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         <FormField label="Description" icon={FileText} error={errors.description}>
                             <Textarea
                                 ref={descriptionRef}
-                                defaultValue=""
+                                defaultValue={formValues.description}
                                 placeholder="Describe the internship role, responsibilities, and what the intern will learn..."
                                 className="min-h-[120px] rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200 resize-none"
                                 style={
@@ -228,7 +277,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                             <FormField label="Location" icon={MapPin} error={errors.location}>
                                 <Input
                                     ref={locationRef}
-                                    defaultValue=""
+                                    defaultValue={formValues.location}
                                     placeholder="e.g., San Francisco, CA"
                                     className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
                                     style={
@@ -241,10 +290,11 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 />
                             </FormField>
 
-                            <FormField label="Qualifications (Optional)" icon={GraduationCap} error={errors.qualifications}>
+                            <FormField label="Qualifications (Optional)" icon={GraduationCap}
+                                       error={errors.qualifications}>
                                 <Input
                                     ref={qualificationsRef}
-                                    defaultValue=""
+                                    defaultValue={formValues.qualifications}
                                     placeholder="e.g., Computer Science student"
                                     className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
                                     style={
@@ -258,8 +308,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                             </FormField>
                         </div>
 
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                            <div className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
+                        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-4">
+                            <div
+                                className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
                                 <Checkbox
                                     checked={paid}
                                     onCheckedChange={(val) => setPaid(!!val)}
@@ -271,8 +322,9 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                         } as React.CSSProperties
                                     }
                                 />
-                                <Label className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
-                                    <DollarSign className="h-4 w-4 text-emerald-400" />
+                                <Label
+                                    className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
+                                    <DollarSign className="h-4 w-4 text-emerald-400"/>
                                     This is a paid internship
                                 </Label>
                             </div>
@@ -286,7 +338,7 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                                 <FormField label="Monthly Salary" icon={DollarSign} error={errors.salary}>
                                     <Input
                                         ref={salaryRef}
-                                        defaultValue=""
+                                        defaultValue={formValues.salary}
                                         type="number"
                                         placeholder="e.g., 2000"
                                         className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder:text-slate-500 focus:ring-2 transition-all duration-200"
@@ -325,12 +377,13 @@ export function InternshipModal({ open, onClose, onCreate }: InternshipModalProp
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                    <div
+                                        className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"/>
                                     Creating...
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-4 w-4" />
+                                    <CheckCircle className="h-4 w-4"/>
                                     Create Internship
                                 </div>
                             )}
