@@ -3,15 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const { userId } = await auth();
         if (!userId) {
-            console.error("GET /api/projects unauthorized");
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        const { searchParams } = new URL(req.url);
+        const companyId = searchParams.get("companyId");
+
         const projects = await prisma.project.findMany({
+            where: companyId ? { companyId } : undefined,
             include: {
                 internship: { include: { company: true } },
                 student: { include: { profile: true } },
@@ -20,10 +23,10 @@ export async function GET() {
             orderBy: { createdAt: "desc" },
         });
 
-        console.log("GET /api/projects found", projects.length);
-
         const mapped = projects.map((p) => ({
             id: p.id,
+            name: p.internship?.title ?? "(no title)", // <-- add this
+            companyId: p.internship?.company?.id ?? "",
             internship: {
                 title: p.internship?.title ?? "(no title)",
                 company: { name: p.internship?.company?.name ?? "(no company)" },
@@ -32,10 +35,9 @@ export async function GET() {
                 name: p.student?.profile?.name ?? p.student?.email ?? "Unknown",
                 email: p.student?.email ?? "",
             },
-            // status currently static — add column if you'd like persistent statuses
             status: "ONGOING",
             createdAt: p.createdAt.toISOString(),
-        }));
+        }))
 
         return NextResponse.json(mapped);
     } catch (err) {

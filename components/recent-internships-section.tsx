@@ -8,7 +8,26 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CardSkeleton } from "@/components/card-skeleton"
 import { InternshipDetailsModal } from "@/components/internship-details-modal"
 import { Input } from "@/components/ui/input"
-import { Layers, Clock, Search, RefreshCw, Trash2 } from "lucide-react"
+import {
+    Layers,
+    Clock,
+    Search,
+    RefreshCw,
+    Trash2,
+    MapPin,
+    GraduationCap,
+    DollarSign,
+    Timer,
+    BookOpen,
+    Wrench,
+    Building2,
+    Briefcase,
+    CheckCircle2,
+    XCircle,
+    Clock3,
+    ArrowRight,
+    Sparkles,
+} from "lucide-react"
 import ApplyButton from "@/components/ApplyBtn"
 
 interface Application {
@@ -37,14 +56,12 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
 
     const loadData = useCallback(async () => {
         try {
-            // fetch internships
             const resInternships = await fetch("/api/internships")
             if (resInternships.ok) {
                 const data = await resInternships.json()
                 setInternships(data)
             }
 
-            // fetch applications if student
             if (userType === "Student") {
                 const resApps = await fetch("/api/applications/me")
                 if (resApps.ok) {
@@ -60,7 +77,6 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
         }
     }, [userType])
 
-    // initial load
     useEffect(() => {
         loadData()
     }, [loadData])
@@ -91,75 +107,94 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
             : filteredInternships
 
     return (
-        <section className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl p-4 backdrop-blur-sm">
-                <div className="relative z-10 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold text-white mb-2">{sectionTitle}</h2>
-                        <p className="text-white/80 text-lg">
+        <section className="space-y-8">
+            <div className="relative overflow-hidden rounded-3xl p-10 backdrop-blur-sm shadow-2xl bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-blue-600/5 border border-border/50">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/5 to-blue-600/10" />
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+
+                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 backdrop-blur-sm shadow-lg">
+                                <Briefcase className="h-7 w-7 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <h2 className="text-4xl font-bold text-foreground">{sectionTitle}</h2>
+                        </div>
+                        <p className="text-muted-foreground text-lg font-medium flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                             {finalInternships.length} {finalInternships.length === 1 ? "opportunity" : "opportunities"} available
                         </p>
                     </div>
                     <Button
-                        variant="secondary"
-                        className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm rounded-2xl px-6 py-3 font-semibold transition-all duration-300"
+                        size="lg"
+                        className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
                     >
                         View All
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </Button>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent" />
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 mt-4 mb-6">
-                <Button
-                    variant={filter === "all" ? "default" : "outline"}
-                    className="rounded-2xl"
-                    onClick={() => setFilter("all")}
-                >
-                    <Layers className="mr-2 h-4 w-4" />
-                    All Internships
-                </Button>
+            <div className="flex flex-wrap items-center gap-4">
+                <div className="flex gap-3">
+                    <Button
+                        variant={filter === "all" ? "default" : "outline"}
+                        size="lg"
+                        className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                        onClick={() => setFilter("all")}
+                    >
+                        <Layers className="mr-2 h-5 w-5" />
+                        All Internships
+                    </Button>
 
-                <Button
-                    variant={filter === "recent" ? "default" : "outline"}
-                    className="rounded-2xl"
-                    onClick={() => setFilter("recent")}
-                >
-                    <Clock className="mr-2 h-4 w-4" />
-                    Recent
-                </Button>
+                    <Button
+                        variant={filter === "recent" ? "default" : "outline"}
+                        size="lg"
+                        className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+                        onClick={() => setFilter("recent")}
+                    >
+                        <Clock className="mr-2 h-5 w-5" />
+                        Recent
+                    </Button>
+                </div>
 
                 <div className="flex-1" />
 
-                <div className="relative w-full md:w-[250px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div className="relative w-full md:w-[320px]">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Search internships..."
-                        className="w-full rounded-2xl pl-9 border-2 focus:border-[var(--experience-accent)] transition-colors"
+                        className="w-full rounded-2xl pl-12 pr-4 py-6 border-2 focus:border-purple-500 transition-all shadow-md focus:shadow-lg text-base"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
 
                 <Button
-                    size="sm"
-                    variant="ghost"
+                    size="lg"
+                    variant="outline"
                     onClick={handleRefresh}
                     disabled={refreshing || isLoading}
-                    className="rounded-2xl"
+                    className="rounded-2xl px-6 py-3 font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg bg-transparent"
                 >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`mr-2 h-5 w-5 ${refreshing ? "animate-spin" : ""}`} />
                     {refreshing ? "Refreshing..." : "Refresh"}
                 </Button>
             </div>
 
             {finalInternships.length === 0 && !isLoading ? (
-                <p className="text-muted-foreground">No internships found.</p>
+                <div className="text-center py-20">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 mb-6">
+                        <Search className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground text-xl font-medium">No internships found.</p>
+                </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {isLoading
-                        ? Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)
+                        ? Array.from({ length: 8 }).map((_, i) => <CardSkeleton key={i} />)
                         : finalInternships.map((item) => {
                             const app = applications.find((a) => a.internshipId === item.id)
 
@@ -168,26 +203,31 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
                                     key={item.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
+                                    transition={{ duration: 0.4 }}
                                     whileHover={{
                                         scale: 1.03,
                                         y: -8,
-                                        transition: { duration: 0.2 },
+                                        transition: { duration: 0.3, ease: "easeOut" },
                                     }}
                                     whileTap={{ scale: 0.98 }}
                                     className="group"
                                 >
-                                    <Card className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-[var(--internship-card-border)] hover:border-[var(--internship-card-border-hover)] transition-all duration-500 h-full bg-gradient-to-br from-[var(--internship-card-gradient-from)] to-[var(--internship-card-gradient-to)] shadow-lg hover:shadow-[0_20px_40px_var(--internship-card-shadow-hover)] backdrop-blur-sm">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--internship-card-hover-from)] to-[var(--internship-card-hover-to)] opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+                                    <Card className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-border hover:border-purple-500/50 transition-all duration-500 h-full bg-gradient-to-br from-card via-card to-card/95 shadow-lg hover:shadow-2xl backdrop-blur-sm">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                        <CardHeader className="pb-4 relative z-10">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--internship-card-hover-from)] to-[var(--internship-card-hover-to)] text-white text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                                    {userType === "Company" ? "🏢" : "📌"}
+                                        <CardHeader className="pb-4 pt-6 px-6 relative z-10">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                    {userType === "Company" ? (
+                                                        <Building2 className="h-7 w-7 text-white" />
+                                                    ) : (
+                                                        <Briefcase className="h-7 w-7 text-white" />
+                                                    )}
                                                 </div>
                                                 {userType === "Company" && (
                                                     <motion.button
-                                                        whileHover={{ scale: 1.1 }}
+                                                        whileHover={{ scale: 1.15 }}
                                                         whileTap={{ scale: 0.9 }}
                                                         onClick={async () => {
                                                             const confirm = window.confirm("Are you sure you want to delete this internship?")
@@ -213,66 +253,82 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
                                                                 console.error(err)
                                                             }
                                                         }}
-                                                        className="p-2 rounded-xl cursor-pointer bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 transition-colors duration-200"
+                                                        className="p-2.5 rounded-xl cursor-pointer bg-destructive/10 hover:bg-destructive/20 transition-all duration-200 shadow-md hover:shadow-lg"
                                                     >
-                                                        <Trash2 className="w-5 h-5 text-red-500" />
+                                                        <Trash2 className="w-5 h-5 text-destructive" />
                                                     </motion.button>
                                                 )}
                                             </div>
                                         </CardHeader>
 
-                                        <CardContent className="flex-1 flex flex-col w-full gap-3 break-words relative z-10 px-6">
-                                            <CardTitle className="text-xl font-bold text-foreground group-hover:text-[var(--internship-card-hover-from)] transition-colors duration-300">
+                                        <CardContent className="flex-1 flex flex-col w-full gap-4 break-words relative z-10 px-6">
+                                            <CardTitle className="text-xl font-bold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 leading-tight">
                                                 {item.title}
                                             </CardTitle>
                                             <CardDescription className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                                                 {item.description}
                                             </CardDescription>
-                                            <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-base">📍</span>
-                                                    <span className="font-medium">{item.location}</span>
+
+                                            <div className="mt-2 space-y-2.5 text-sm">
+                                                <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                    <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                        <MapPin className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                    </div>
+                                                    <span className="font-semibold">{item.location}</span>
                                                 </div>
                                                 {item.qualifications && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-base">🎓</span>
-                                                        <span>{item.qualifications}</span>
+                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                        <div className="p-1.5 rounded-lg bg-blue-500/10">
+                                                            <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                        </div>
+                                                        <span className="line-clamp-1">{item.qualifications}</span>
                                                     </div>
                                                 )}
                                                 {item.paid && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-base">💰</span>
-                                                        <span className="font-semibold text-green-600 dark:text-green-400">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="p-1.5 rounded-lg bg-green-500/10">
+                                                            <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                                        </div>
+                                                        <span className="font-bold text-green-600 dark:text-green-400">
                                 ${item.salary ?? "Negotiable"}
                               </span>
                                                     </div>
                                                 )}
                                                 {item.duration && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-base">⏳</span>
+                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                        <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                            <Timer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                        </div>
                                                         <span>{item.duration}</span>
                                                     </div>
                                                 )}
                                                 {item.grade && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-base">📖</span>
+                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                        <div className="p-1.5 rounded-lg bg-blue-500/10">
+                                                            <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                        </div>
                                                         <span>Grade: {item.grade}</span>
                                                     </div>
                                                 )}
                                                 {item.skills && (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-base">🛠️</span>
-                                                        <span>{item.skills}</span>
+                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
+                                                        <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                            <Wrench className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                        </div>
+                                                        <span className="line-clamp-1">{item.skills}</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </CardContent>
 
-                                        <CardFooter className="w-full flex justify-between items-center gap-3 p-6 relative z-10">
+                                        <CardFooter className="w-full flex justify-between items-center gap-3 p-6 relative z-10 border-t border-border/50">
                                             {userType === "Student" ? (
                                                 <div className="flex gap-3 w-full">
                                                     {app ? (
                                                         <Button
+                                                            disabled
+                                                            size="lg"
+                                                            className="flex-1 rounded-2xl py-6 font-bold shadow-lg cursor-not-allowed"
                                                             variant={
                                                                 app.status === "APPROVED"
                                                                     ? "default"
@@ -280,20 +336,25 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
                                                                         ? "destructive"
                                                                         : "outline"
                                                             }
-                                                            disabled
-                                                            className="flex-1 rounded-2xl py-3 text-foreground font-semibold shadow-md"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    app.status === "PENDING"
-                                                                        ? "var(--internship-status-pending)"
-                                                                        : app.status === "APPROVED"
-                                                                            ? "var(--internship-status-approved)"
-                                                                            : "var(--internship-status-rejected)",
-                                                            }}
                                                         >
-                                                            {app.status === "PENDING" && "Applied ✅"}
-                                                            {app.status === "APPROVED" && "Approved 🎉"}
-                                                            {app.status === "REJECTED" && "Rejected ❌"}
+                                                            {app.status === "PENDING" && (
+                                                                <>
+                                                                    <Clock3 className="mr-2 h-5 w-5" />
+                                                                    Applied
+                                                                </>
+                                                            )}
+                                                            {app.status === "APPROVED" && (
+                                                                <>
+                                                                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                                                                    Approved
+                                                                </>
+                                                            )}
+                                                            {app.status === "REJECTED" && (
+                                                                <>
+                                                                    <XCircle className="mr-2 h-5 w-5" />
+                                                                    Rejected
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     ) : (
                                                         <ApplyButton
@@ -307,21 +368,26 @@ export function RecentInternshipsSection({ userType }: RecentAppsSectionProps) {
                                                         />
                                                     )}
 
-                                                    <Button
-                                                        variant="secondary"
-                                                        className="flex-1 rounded-2xl py-3 font-semibold bg-gradient-to-r from-[var(--internship-card-hover-from)] to-[var(--internship-card-hover-to)] text-white hover:shadow-lg transition-all duration-300"
-                                                        onClick={() => setSelectedInternship(item)}
-                                                    >
-                                                        See More
-                                                    </Button>
+                                                    {!app && (
+                                                        <Button
+                                                            size="lg"
+                                                            variant="outline"
+                                                            className="flex-1 rounded-2xl  font-bold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-xl border-2 hover:border-purple-500 group bg-transparent"
+                                                            onClick={() => setSelectedInternship(item)}
+                                                        >
+                                                            Details
+                                                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <Button
-                                                    variant="secondary"
-                                                    className="w-full rounded-2xl py-3 font-semibold bg-gradient-to-r from-[var(--internship-card-hover-from)] to-[var(--internship-card-hover-to)] text-white hover:shadow-lg transition-all duration-300"
+                                                    size="lg"
+                                                    className="w-full rounded-2xl py-6 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
                                                     onClick={() => setSelectedInternship(item)}
                                                 >
                                                     Manage
+                                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                                 </Button>
                                             )}
                                         </CardFooter>

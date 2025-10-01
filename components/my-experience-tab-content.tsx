@@ -23,7 +23,7 @@ import {
   Layers,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -52,10 +52,16 @@ type Summary = {
   allRound: number
 }
 
+type Project = { id: string; name: string; companyId: string }
+
+
 export default function ExperienceTabContent() {
   const { user } = useUser()
   const role = user?.publicMetadata?.role as "STUDENT" | "COMPANY" | undefined
-
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectId, setProjectId] = useState<string>("")
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
   const [experiences, setExperiences] = useState<Experience[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [companies, setCompanies] = useState<Company[]>([])
@@ -120,6 +126,48 @@ export default function ExperienceTabContent() {
     fetchCompanies()
   }, [role])
 
+  //Fetch projects when a company is selected
+  useEffect(() => {
+    if (!companyId) {
+      setProjects([]);
+      setProjectsError(null);
+      return;
+    }
+
+    const fetchProjects = async () => {
+      setProjectsLoading(true);
+      setProjectsError(null);
+
+      try {
+        const res = await fetch(`/api/projects?companyId=${companyId}`);
+
+        if (!res.ok) {
+          throw new Error(
+              `Failed to load projects (${res.status}): ${res.statusText}`
+          );
+        }
+
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid response format from API');
+        }
+
+        setProjects(data);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setProjectsError(err instanceof Error ? err.message : 'Failed to load projects');
+        setProjects([]);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [companyId]);
+
+
+
   // drag + file upload helpers …
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -158,12 +206,15 @@ export default function ExperienceTabContent() {
 
   // ✅ Upload (student)
   const handleUpload = async () => {
-    if (!files || !companyId) return alert("Please select company and files")
+    if (!files || !companyId || !projectId)
+      return alert("Please select company, project and files")
+
     setLoading(true)
     setUploadProgress(0)
     try {
       const formData = new FormData()
       formData.append("companyId", companyId)
+      formData.append("projectId", projectId)
       Array.from(files).forEach((file) => formData.append("files", file))
 
       const progressInterval = setInterval(() => {
@@ -180,6 +231,7 @@ export default function ExperienceTabContent() {
       setExperiences((prev) => [newExp, ...prev])
       setFiles(null)
       setCompanyId("")
+      setProjectId("")
       setUploadProgress(0)
     } catch (err) {
       console.error(err)
@@ -189,6 +241,7 @@ export default function ExperienceTabContent() {
       setLoading(false)
     }
   }
+
 
   // ✅ Approve/reject (company)
   const handleAction = async (id: string, action: "approve" | "reject", grade?: number | null) => {
@@ -362,22 +415,99 @@ export default function ExperienceTabContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Company Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Company</label>
-                    <select
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-[var(--experience-accent)]" />
+                      Company
+                    </label>
+                    <Select
                         value={companyId}
-                        onChange={(e) => setCompanyId(e.target.value)}
-                        className="w-full rounded-2xl border border-[var(--experience-step-border)] bg-background px-4 py-3 text-sm focus:border-[var(--experience-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--experience-accent)]/20 transition-all"
+                        onValueChange={(value) => {
+                          setCompanyId(value)
+                          setProjectId("")
+                        }}
                     >
-                      <option value="">Select a company...</option>
-                      {companies.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full h-auto rounded-2xl border-2 border-[var(--experience-step-border)] bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group">
+                        <div className="flex items-center gap-3 w-full">
+                          <SelectValue placeholder="Select a company..." className="text-left flex-1" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
+                        {companies.map((c) => (
+                            <SelectItem
+                                key={c.id}
+                                value={c.id}
+                                className="rounded-xl my-1 mx-1 px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 focus:bg-gradient-to-r focus:from-purple-500/10 focus:to-blue-500/10 transition-all"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+                                  <Building2 className="h-3.5 w-3.5 text-purple-500" />
+                                </div>
+                                <span className="font-medium">{c.name}</span>
+                              </div>
+                            </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {companyId && (
+                      <div className="space-y-3">
+                        <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-[var(--experience-accent)]" />
+                          Project
+                        </label>
+                        <Select value={projectId} onValueChange={(value) => setProjectId(value)} disabled={projectsLoading}>
+                          <SelectTrigger
+                              className={`w-full h-auto rounded-2xl border-2 bg-background px-5 py-3.5 text-sm font-medium hover:border-[var(--experience-accent)]/50 focus:border-[var(--experience-accent)] focus:ring-4 focus:ring-[var(--experience-accent)]/10 transition-all shadow-sm group disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  projectsError ? "border-red-500 hover:border-red-500" : "border-[var(--experience-step-border)]"
+                              }`}
+                          >
+                            <div className="flex items-center gap-3 w-full">
+                              <SelectValue
+                                  placeholder={
+                                    projectsLoading
+                                        ? "Loading projects..."
+                                        : projectsError
+                                            ? "Error loading projects"
+                                            : "Select a project..."
+                                  }
+                                  className="text-left flex-1"
+                              />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl border-2 border-[var(--experience-step-border)] bg-background shadow-2xl shadow-[var(--experience-accent)]/10">
+                            {!projectsLoading &&
+                                !projectsError &&
+                                projects.map((p) => (
+                                    <SelectItem
+                                        key={p.id}
+                                        value={p.id}
+                                        className="rounded-xl my-1 mx-1 px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-blue-500/10 focus:bg-gradient-to-r focus:from-purple-500/10 focus:to-blue-500/10 transition-all"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+                                          <Layers className="h-3.5 w-3.5 text-purple-500" />
+                                        </div>
+                                        <span className="font-medium">{p.name}</span>
+                                      </div>
+                                    </SelectItem>
+                                ))}
+                          </SelectContent>
+                        </Select>
+                        {projectsError && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
+                            >
+                              <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                              <p className="text-sm text-red-500 font-medium">{projectsError}</p>
+                            </motion.div>
+                        )}
+                      </div>
+                  )}
+
 
                   {/* File Upload Zone */}
                   <div className="space-y-2">
@@ -402,7 +532,7 @@ export default function ExperienceTabContent() {
                       />
                       <div className="space-y-3">
                         <div className="mx-auto w-12 h-12 rounded-full bg-[var(--experience-accent)]/10 flex items-center justify-center">
-                          <Upload className="h-6 w-6 text-[var(--experience-accent)]" />
+                          <Upload className="h-6 w-6 text-purple-500" />
                         </div>
                         <div>
                           <p className="text-sm font-medium">Drop files here or click to browse</p>
