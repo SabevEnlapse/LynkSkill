@@ -70,7 +70,8 @@ model Internship {
 
   applicationStart DateTime @default(now())
   applicationEnd   DateTime @default(now())
-
+  startDate        DateTime?
+  endDate          DateTime?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
