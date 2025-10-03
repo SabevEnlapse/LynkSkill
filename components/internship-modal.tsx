@@ -1,17 +1,30 @@
 "use client"
 
-import React, {useEffect} from "react"
-import {useRef, useState, useCallback} from "react"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog"
-import {Input} from "@/components/ui/input"
-import {Textarea} from "@/components/ui/textarea"
-import {Button} from "@/components/ui/button"
-import {Label} from "@/components/ui/label"
-import {Checkbox} from "@/components/ui/checkbox"
-import type {ComponentType, SVGProps} from "react"
-import {motion, AnimatePresence} from "framer-motion"
-import type {Internship} from "@/app/types"
-import {Briefcase, MapPin, FileText, GraduationCap, DollarSign, CheckCircle, AlertCircle, Calendar} from "lucide-react"
+import type React from "react"
+import { useEffect } from "react"
+import { useRef, useState, useCallback } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import type { ComponentType, SVGProps } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import type { Internship } from "@/app/types"
+import {
+    Briefcase,
+    MapPin,
+    FileText,
+    GraduationCap,
+    DollarSign,
+    CheckCircle,
+    AlertCircle,
+    CalendarIcon,
+} from "lucide-react"
+import { format } from "date-fns"
 
 interface InternshipFormData {
     title: string
@@ -23,7 +36,6 @@ interface InternshipFormData {
     applicationStart: string
     applicationEnd: string
 }
-
 
 interface InternshipModalProps {
     open: boolean
@@ -48,11 +60,9 @@ interface FormValues {
     location: string
     qualifications: string
     salary: string
-    applicationStart: string
-    applicationEnd: string
 }
 
-export function InternshipModal({open, onClose, onCreate}: InternshipModalProps) {
+export function InternshipModal({ open, onClose, onCreate }: InternshipModalProps) {
     const titleRef = useRef<HTMLInputElement | null>(null)
     const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
     const locationRef = useRef<HTMLInputElement | null>(null)
@@ -68,10 +78,10 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
         location: "",
         qualifications: "",
         salary: "",
-        applicationStart: "",
-        applicationEnd: ""
     })
 
+    const [applicationStart, setApplicationStart] = useState<Date | undefined>(undefined)
+    const [applicationEnd, setApplicationEnd] = useState<Date | undefined>(undefined)
 
     // Update refs when form values change
     useEffect(() => {
@@ -83,6 +93,7 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
     }, [formValues])
 
     // Reset form when modal closes
+    // Reset form when modal closes
     useEffect(() => {
         if (!open) {
             setFormValues({
@@ -91,13 +102,14 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                 location: "",
                 qualifications: "",
                 salary: "",
-                applicationStart: "",
-                applicationEnd: ""
             })
             setPaid(false)
             setErrors({})
+            setApplicationStart(undefined)
+            setApplicationEnd(undefined)
         }
     }, [open])
+
 
     const readValues = useCallback(() => {
         const values = {
@@ -107,15 +119,14 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
             qualifications: qualificationsRef.current?.value ?? "",
             paid,
             salary: salaryRef.current?.value ?? "",
-            applicationStart: formValues.applicationStart,
-            applicationEnd: formValues.applicationEnd,
+            applicationStart: applicationStart?.toISOString().split("T")[0] ?? "",
+            applicationEnd: applicationEnd?.toISOString().split("T")[0] ?? "",
         }
 
         setFormValues(values)
 
         return values
-    }, [paid, formValues])
-
+    }, [paid, applicationStart, applicationEnd])
 
     async function handleSubmit() {
         setIsLoading(true)
@@ -134,7 +145,11 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
         if (!vals.applicationEnd) {
             newErrors.applicationEnd = ["End date is required"]
         }
-        if (vals.applicationStart && vals.applicationEnd && new Date(vals.applicationStart) > new Date(vals.applicationEnd)) {
+        if (
+            vals.applicationStart &&
+            vals.applicationEnd &&
+            new Date(vals.applicationStart) > new Date(vals.applicationEnd)
+        ) {
             newErrors.applicationEnd = ["End date must be after start date"]
         }
         if (!vals.location || vals.location.length < 2) {
@@ -164,7 +179,7 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
 
             const res = await fetch("/api/internships", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             })
 
@@ -179,11 +194,11 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                     location: "",
                     qualifications: "",
                     salary: "",
-                    applicationStart: "",
-                    applicationEnd: ""
                 })
                 setPaid(false)
                 setErrors({})
+                setApplicationStart(undefined)
+                setApplicationEnd(undefined)
             } else {
                 const errData = await res.json().catch(() => ({}))
                 alert(errData.message || "Failed to create internship")
@@ -195,7 +210,6 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
             setIsLoading(false)
         }
     }
-
 
     // Form field wrapper
     const FormField = ({
@@ -209,21 +223,21 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
         error?: string[]
         children: React.ReactNode
     }) => (
-        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-2">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
             <Label className="flex items-center gap-2 text-sm font-medium text-slate-200">
-                <Icon className="h-4 w-4" style={{color: "var(--internship-modal-gradient-from)"}}/>
+                <Icon className="h-4 w-4" style={{ color: "var(--internship-modal-gradient-from)" }} />
                 {label}
             </Label>
             {children}
             <AnimatePresence>
                 {error && (
                     <motion.div
-                        initial={{opacity: 0, height: 0}}
-                        animate={{opacity: 1, height: "auto"}}
-                        exit={{opacity: 0, height: 0}}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
                         className="flex items-center gap-2 text-sm text-red-400"
                     >
-                        <AlertCircle className="h-3 w-3"/>
+                        <AlertCircle className="h-3 w-3" />
                         {error[0]}
                     </motion.div>
                 )}
@@ -251,13 +265,13 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                     <DialogHeader className="relative">
                         <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-white">
                             <div className="rounded-xl bg-white/20 p-2 backdrop-blur-sm">
-                                <Briefcase className="h-6 w-6"/>
+                                <Briefcase className="h-6 w-6" />
                             </div>
                             Create New Internship
                         </DialogTitle>
                         <p className="text-white/80 text-sm">Fill in the details to create an internship opportunity</p>
                     </DialogHeader>
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl"/>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                 </div>
 
                 <div className="bg-slate-900 p-8 rounded-b-2xl">
@@ -295,25 +309,61 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                         </FormField>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField label="Applications Open" icon={Calendar} error={errors.applicationStart}>
-                                <Input
-                                    type="date"
-                                    value={formValues.applicationStart}
-                                    onChange={(e) => setFormValues({...formValues, applicationStart: e.target.value})}
-                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white"
-                                />
+                            <FormField label="Applications Open" icon={CalendarIcon} error={errors.applicationStart}>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {applicationStart ? (
+                                                format(applicationStart, "PPP")
+                                            ) : (
+                                                <span className="text-slate-500">Pick a date</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={applicationStart}
+                                            onSelect={setApplicationStart}
+                                            initialFocus
+                                            className="rounded-xl"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </FormField>
 
-                            <FormField label="Applications Close" icon={Calendar} error={errors.applicationEnd}>
-                                <Input
-                                    type="date"
-                                    value={formValues.applicationEnd}
-                                    onChange={(e) => setFormValues({...formValues, applicationEnd: e.target.value})}
-                                    className="h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white"
-                                />
+                            <FormField label="Applications Close" icon={CalendarIcon} error={errors.applicationEnd}>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full justify-start text-left font-normal h-11 rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {applicationEnd ? (
+                                                format(applicationEnd, "PPP")
+                                            ) : (
+                                                <span className="text-slate-500">Pick a date</span>
+                                            )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={applicationEnd}
+                                            onSelect={setApplicationEnd}
+                                            initialFocus
+                                            disabled={(date) => (applicationStart ? date < applicationStart : false)}
+                                            className="rounded-xl"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
                             </FormField>
                         </div>
-
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField label="Location" icon={MapPin} error={errors.location}>
@@ -332,8 +382,7 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                                 />
                             </FormField>
 
-                            <FormField label="Qualifications (Optional)" icon={GraduationCap}
-                                       error={errors.qualifications}>
+                            <FormField label="Qualifications (Optional)" icon={GraduationCap} error={errors.qualifications}>
                                 <Input
                                     ref={qualificationsRef}
                                     defaultValue={formValues.qualifications}
@@ -350,9 +399,8 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                             </FormField>
                         </div>
 
-                        <motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} className="space-y-4">
-                            <div
-                                className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                            <div className="flex items-center space-x-3 rounded-xl bg-slate-800/50 border border-slate-700 p-4">
                                 <Checkbox
                                     checked={paid}
                                     onCheckedChange={(val) => setPaid(!!val)}
@@ -364,9 +412,8 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                                         } as React.CSSProperties
                                     }
                                 />
-                                <Label
-                                    className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
-                                    <DollarSign className="h-4 w-4 text-emerald-400"/>
+                                <Label className="flex items-center gap-2 text-base font-medium cursor-pointer text-slate-200">
+                                    <DollarSign className="h-4 w-4 text-emerald-400" />
                                     This is a paid internship
                                 </Label>
                             </div>
@@ -419,13 +466,12 @@ export function InternshipModal({open, onClose, onCreate}: InternshipModalProps)
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-2">
-                                    <div
-                                        className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"/>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                     Creating...
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-4 w-4"/>
+                                    <CheckCircle className="h-4 w-4" />
                                     Create Internship
                                 </div>
                             )}

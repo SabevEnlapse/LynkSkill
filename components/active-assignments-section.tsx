@@ -252,20 +252,20 @@ export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSection
                                                                     {/* Detailed Stats */}
                                                                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                                                                         <div className="flex items-center gap-4">
-                                      <span className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                          {details.daysSinceStart} days active
-                                      </span>
+                                                                          <span className="flex items-center gap-1">
+                                                                            <Clock className="h-3 w-3" />
+                                                                              {details.daysSinceStart} days active
+                                                                          </span>
                                                                             {proj.status === "ONGOING" && (
                                                                                 <span className="flex items-center gap-1">
-                                          <Calendar className="h-3 w-3" />~{details.remainingDays} days remaining
-                                        </span>
+                                                                                  <Calendar className="h-3 w-3" />~{details.remainingDays} days remaining
+                                                                                </span>
                                                                             )}
                                                                         </div>
                                                                         {proj.status === "COMPLETED" && (
                                                                             <span className="text-[var(--application-approved)] font-medium">
-                                        Completed in {details.daysSinceStart} days
-                                      </span>
+                                                                                Completed in {details.daysSinceStart} days
+                                                                              </span>
                                                                         )}
                                                                     </div>
                                                                 </div>

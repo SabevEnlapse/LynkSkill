@@ -2,13 +2,13 @@
 
 import type React from "react"
 
-import {useEffect, useState, useCallback} from "react"
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from "@/components/ui/dialog"
-import {Badge} from "@/components/ui/badge"
-import {Button} from "@/components/ui/button"
-import {RefreshCw, Search, Users, FileText, Clock, Layers} from "lucide-react"
-import {Input} from "@/components/ui/input"
+import { useEffect, useState, useCallback } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { RefreshCw, Search, Users, FileText, Clock, Layers, Building2, Calendar, TrendingUp } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 type ApiProject = {
     id: string
@@ -22,7 +22,6 @@ type ApiProject = {
     status: "ONGOING" | "COMPLETED"
     createdAt: string
 }
-
 
 export function AssignmentsTabContent() {
     const [projects, setProjects] = useState<ApiProject[]>([])
@@ -91,36 +90,13 @@ export function AssignmentsTabContent() {
 
     return (
         <div className="space-y-8">
-            {/*<section>*/}
-            {/*  <div className="overflow-hidden rounded-3xl p-8 text-white relative">*/}
-            {/*    <div*/}
-            {/*        className="absolute inset-0 opacity-90"*/}
-            {/*        style={{*/}
-            {/*          background: `linear-gradient(135deg, var(--projects-hero-from), var(--projects-hero-to))`,*/}
-            {/*        }}*/}
-            {/*    />*/}
-            {/*    <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">*/}
-            {/*      <div className="space-y-2">*/}
-            {/*        <h1 className="text-3xl font-bold text-balance">Project Management</h1>*/}
-            {/*        <p className="max-w-[600px] text-white/90 text-pretty">*/}
-            {/*          Organize and track your internship projects. Monitor progress and collaborate with your team.*/}
-            {/*        </p>*/}
-            {/*      </div>*/}
-            {/*      <Button className="w-fit rounded-2xl bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20 transition-all duration-300">*/}
-            {/*        <Plus className="mr-2 h-4 w-4" />*/}
-            {/*        New Project*/}
-            {/*      </Button>*/}
-            {/*    </div>*/}
-            {/*  </div>*/}
-            {/*</section>*/}
-
             <div className="flex flex-wrap gap-3 mb-6">
                 <Button
                     variant={filter === "all" ? "default" : "outline"}
                     className="rounded-2xl"
                     onClick={() => setFilter("all")}
                 >
-                    <Layers className="mr-2 h-4 w-4"/>
+                    <Layers className="mr-2 h-4 w-4" />
                     All Assignments
                 </Button>
 
@@ -129,26 +105,12 @@ export function AssignmentsTabContent() {
                     className="rounded-2xl"
                     onClick={() => setFilter("recent")}
                 >
-                    <Clock className="mr-2 h-4 w-4"/>
+                    <Clock className="mr-2 h-4 w-4" />
                     Recent
                 </Button>
-                {/*<Button*/}
-                {/*    variant="outline"*/}
-                {/*    className="rounded-2xl bg-transparent border-2 hover:border-[var(--projects-accent)] hover:text-[var(--projects-accent)] transition-colors"*/}
-                {/*>*/}
-                {/*  <Users className="mr-2 h-4 w-4" />*/}
-                {/*  Shared*/}
-                {/*</Button>*/}
-                {/*<Button*/}
-                {/*    variant="outline"*/}
-                {/*    className="rounded-2xl bg-transparent border-2 hover:border-[var(--projects-accent)] hover:text-[var(--projects-accent)] transition-colors"*/}
-                {/*>*/}
-                {/*  <Archive className="mr-2 h-4 w-4" />*/}
-                {/*  Archived*/}
-                {/*</Button>*/}
                 <div className="flex-1"></div>
                 <div className="relative w-full md:w-auto mt-3 md:mt-0">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground"/>
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Search assignments..."
@@ -164,14 +126,14 @@ export function AssignmentsTabContent() {
                     disabled={refreshing || loading}
                     className="rounded-2xl"
                 >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}/>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                     {refreshing ? "Refreshing..." : "Refresh"}
                 </Button>
             </div>
 
             {loading ? (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {Array.from({length: 6}).map((_, i) => (
+                    {Array.from({ length: 6 }).map((_, i) => (
                         <Card key={i} className="rounded-3xl animate-pulse">
                             <CardHeader>
                                 <div className="h-6 bg-muted rounded w-3/4"></div>
@@ -241,13 +203,10 @@ export function AssignmentsTabContent() {
                                     }}
                                 />
 
-                                <div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]"/>
-
+                                <div className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
                                 <CardHeader className="relative z-10">
                                     <div className="flex items-start justify-between gap-2">
-                                        <CardTitle
-                                            className="line-clamp-2 text-lg group-hover:text-white transition-colors duration-300">
+                                        <CardTitle className="line-clamp-2 text-lg group-hover:text-white transition-colors duration-300">
                                             {proj.internship.title}
                                         </CardTitle>
                                         <Badge
@@ -261,42 +220,34 @@ export function AssignmentsTabContent() {
 
                                 <CardContent className="space-y-3 relative z-10">
                                     <div className="space-y-2">
-                                        <div
-                                            className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                        <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
                                             <div
                                                 className="w-2 h-2 rounded-full mr-2 group-hover:bg-white/80 transition-colors duration-300"
-                                                style={{backgroundColor: `var(--internship-card-hover-from)`}}
+                                                style={{ backgroundColor: `var(--internship-card-hover-from)` }}
                                             ></div>
                                             <span className="font-medium">Company:</span>
                                             <span className="ml-1">{proj.internship.company?.name ?? "Unknown"}</span>
                                         </div>
-                                        <div
-                                            className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
-                                            <Users
-                                                className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300"/>
+                                        <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                            <Users className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
                                             <span className="font-medium">Student:</span>
-                                            <span
-                                                className="ml-1 truncate">{proj.student?.name ?? proj.student?.email ?? "Unknown"}</span>
+                                            <span className="ml-1 truncate">{proj.student?.name ?? proj.student?.email ?? "Unknown"}</span>
                                         </div>
                                     </div>
 
-                                    <div
-                                        className="pt-2 border-t group-hover:border-white/20 transition-colors duration-300">
-                                        <div
-                                            className="flex items-center justify-between text-xs group-hover:text-white/80 transition-colors duration-300">
-                                            <div
-                                                className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
-                                                <Clock
-                                                    className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300"/>
+                                    <div className="pt-2 border-t group-hover:border-white/20 transition-colors duration-300">
+                                        <div className="flex items-center justify-between text-xs group-hover:text-white/80 transition-colors duration-300">
+                                            <div className="flex items-center text-sm group-hover:text-white/90 transition-colors duration-300">
+                                                <Clock className="w-4 h-4 mr-2 group-hover:text-white/70 transition-colors duration-300" />
                                                 <span className="font-medium">Period:</span>
                                                 <span className="ml-1">
-                                                  {new Date(proj.internship.startDate).toLocaleDateString()} -{" "}
+                          {new Date(proj.internship.startDate).toLocaleDateString()} -{" "}
                                                     {new Date(proj.internship.endDate).toLocaleDateString()}
-                                                </span>
+                        </span>
                                             </div>
 
                                             <div className="flex items-center">
-                                                <FileText className="w-3 h-3 mr-1"/>
+                                                <FileText className="w-3 h-3 mr-1" />
                                                 View Details
                                             </div>
                                         </div>
@@ -316,58 +267,158 @@ export function AssignmentsTabContent() {
             )}
 
             <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-                <DialogContent className="rounded-3xl max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-[var(--projects-accent)]">Assignments Details</DialogTitle>
+                <DialogContent className="rounded-3xl max-w-2xl border-2 bg-background">
+                    <div
+                        className="absolute top-0 left-0 right-0 h-32 rounded-t-3xl opacity-20"
+                        style={{
+                            background: `linear-gradient(135deg, var(--projects-card-hover-from), var(--projects-card-hover-to))`,
+                        }}
+                    />
+
+                    <DialogHeader className="relative z-10">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div
+                                className="p-3 rounded-xl"
+                                style={{
+                                    background: `linear-gradient(135deg, var(--projects-card-hover-from), var(--projects-card-hover-to))`,
+                                }}
+                            >
+                                <FileText className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-2xl font-bold">Assignment Details</DialogTitle>
+                                <p className="text-sm text-muted-foreground">Complete project information</p>
+                            </div>
+                        </div>
                     </DialogHeader>
 
                     {selected && (
-                        <div className="space-y-4">
+                        <div className="space-y-6 relative z-10">
                             <div
-                                className="p-4 rounded-2xl bg-gradient-to-br from-[var(--projects-card-hover-from)]/10 to-[var(--projects-card-hover-to)]/10 border border-[var(--projects-accent)]/20">
-                                <div className="text-sm font-medium text-muted-foreground mb-1">Internship</div>
-                                <div className="text-lg font-semibold text-balance">{selected.internship.title}</div>
+                                className="p-6 rounded-2xl border-2 relative overflow-hidden"
+                                style={{
+                                    background: `linear-gradient(135deg, var(--projects-card-hover-from)/10, var(--projects-card-hover-to)/10)`,
+                                    borderColor: `var(--projects-accent)/30`,
+                                }}
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-2xl" />
+                                <div className="relative">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1">
+                                            <div className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                                                Internship Position
+                                            </div>
+                                            <h3 className="text-xl font-bold text-balance mb-2">{selected.internship.title}</h3>
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Building2 className="h-4 w-4 text-muted-foreground" />
+                                                <span className="font-medium">{selected.internship.company?.name ?? "Unknown"}</span>
+                                            </div>
+                                        </div>
+                                        <Badge
+                                            variant={selected.status === "ONGOING" ? "secondary" : "default"}
+                                            className="rounded-xl px-3 py-1 text-sm font-semibold"
+                                        >
+                                            {selected.status}
+                                        </Badge>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <div className="text-sm font-medium text-muted-foreground mb-1">Company</div>
-                                    <div className="font-medium">{selected.internship.company?.name ?? "Unknown"}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Users className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Student</div>
+                                    </div>
+                                    <div className="font-semibold text-lg">
+                                        {selected.student?.name ?? selected.student?.email ?? "Unknown"}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground mt-1">{selected.student.email}</div>
                                 </div>
-                                <div>
-                                    <div className="text-sm font-medium text-muted-foreground mb-1">Status</div>
-                                    <Badge variant={selected.status === "ONGOING" ? "secondary" : "default"}
-                                           className="rounded-xl">
-                                        {selected.status}
-                                    </Badge>
-                                </div>
-                              <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <div className="text-sm font-medium text-muted-foreground mb-1">Period</div>
-                                <div className="font-medium">
-                                  {new Date(selected.internship.startDate).toLocaleDateString()} –{" "}
-                                  {new Date(selected.internship.endDate).toLocaleDateString()}
-                                </div>
-                              </div>
-                            </div>
-                            </div>
 
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground mb-1">Student</div>
-                                <div
-                                    className="font-medium">{selected.student?.name ?? selected.student?.email ?? "Unknown"}</div>
-                                <div className="text-sm text-muted-foreground">{selected.student.email}</div>
-                            </div>
+                                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Calendar className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Duration</div>
+                                    </div>
+                                    <div className="font-semibold text-sm">
+                                        {new Date(selected.internship.startDate).toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground my-1">to</div>
+                                    <div className="font-semibold text-sm">
+                                        {new Date(selected.internship.endDate).toLocaleDateString("en-US", {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
+                                    </div>
+                                </div>
 
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground mb-1">Started</div>
-                                <div className="font-medium">{new Date(selected.createdAt).toLocaleString()}</div>
+                                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Clock className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Started On</div>
+                                    </div>
+                                    <div className="font-semibold">
+                                        {new Date(selected.createdAt).toLocaleDateString("en-US", {
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                        {new Date(selected.createdAt).toLocaleTimeString("en-US", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <TrendingUp className="h-4 w-4" style={{ color: "var(--projects-accent)" }} />
+                                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Progress</div>
+                                    </div>
+                                    <div className="font-semibold text-2xl">
+                                        {(() => {
+                                            const start = new Date(selected.internship.startDate).getTime()
+                                            const end = new Date(selected.internship.endDate).getTime()
+                                            const now = Date.now()
+                                            const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+                                            return Math.round(progress)
+                                        })()}%
+                                    </div>
+                                    <div className="mt-2 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-500"
+                                            style={{
+                                                width: `${(() => {
+                                                    const start = new Date(selected.internship.startDate).getTime()
+                                                    const end = new Date(selected.internship.endDate).getTime()
+                                                    const now = Date.now()
+                                                    return Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+                                                })()}%`,
+                                                background: `linear-gradient(90deg, var(--projects-card-hover-from), var(--projects-card-hover-to))`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    <DialogFooter>
-                        <Button onClick={() => setSelected(null)} className="rounded-2xl">
+                    <DialogFooter className="relative z-10">
+                        <Button
+                            onClick={() => setSelected(null)}
+                            className="rounded-2xl px-6 text-foreground"
+                            style={{
+                                background: `linear-gradient(135deg, var(--projects-card-hover-from), var(--projects-card-hover-to))`,
+                            }}
+                        >
                             Close
                         </Button>
                     </DialogFooter>

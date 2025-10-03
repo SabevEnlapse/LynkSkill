@@ -2,16 +2,29 @@
 
 import type React from "react"
 
-import {useRef, useState, useCallback, useEffect} from "react"
-import {motion, AnimatePresence} from "framer-motion"
-import {Dialog, DialogContent, DialogTitle, DialogFooter} from "@/components/ui/dialog"
-import {Input} from "@/components/ui/input"
-import {Textarea} from "@/components/ui/textarea"
-import {Button} from "@/components/ui/button"
-import {Label} from "@/components/ui/label"
-import {Checkbox} from "@/components/ui/checkbox"
-import type {Internship} from "@/app/types"
-import {Briefcase, MapPin, GraduationCap, DollarSign, FileText, Building2, Loader2, AlertCircle} from "lucide-react"
+import { useRef, useState, useCallback, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import type { Internship } from "@/app/types"
+import {
+    Briefcase,
+    MapPin,
+    GraduationCap,
+    DollarSign,
+    FileText,
+    Building2,
+    Loader2,
+    AlertCircle,
+    CalendarIcon,
+} from "lucide-react"
+import { format } from "date-fns"
 
 interface InternshipDetailsModalProps {
     open: boolean
@@ -32,15 +45,15 @@ interface Errors {
     applicationEnd?: string[]
 }
 
-export function InternshipDetailsModal({open, onClose, internship, userType, onUpdate}: InternshipDetailsModalProps) {
+export function InternshipDetailsModal({ open, onClose, internship, userType, onUpdate }: InternshipDetailsModalProps) {
     const titleRef = useRef<HTMLInputElement | null>(null)
     const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
     const locationRef = useRef<HTMLInputElement | null>(null)
     const qualificationsRef = useRef<HTMLInputElement | null>(null)
     const salaryRef = useRef<HTMLInputElement | null>(null)
 
-    const [applicationStart, setApplicationStart] = useState("")
-    const [applicationEnd, setApplicationEnd] = useState("")
+    const [applicationStart, setApplicationStart] = useState<Date | undefined>(undefined)
+    const [applicationEnd, setApplicationEnd] = useState<Date | undefined>(undefined)
 
     const [paid, setPaid] = useState(false)
     const [errors, setErrors] = useState<Errors>({})
@@ -55,8 +68,8 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
             if (salaryRef.current) salaryRef.current.value = internship.salary?.toString() || ""
             setPaid(internship.paid)
 
-            setApplicationStart(internship.applicationStart ? internship.applicationStart.split("T")[0] : "")
-            setApplicationEnd(internship.applicationEnd ? internship.applicationEnd.split("T")[0] : "")
+            setApplicationStart(internship.applicationStart ? new Date(internship.applicationStart) : undefined)
+            setApplicationEnd(internship.applicationEnd ? new Date(internship.applicationEnd) : undefined)
 
             setErrors({})
         }
@@ -70,11 +83,10 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
             qualifications: qualificationsRef.current?.value ?? "",
             paid,
             salary: salaryRef.current?.value ?? "",
-            applicationStart,
-            applicationEnd,
+            applicationStart: applicationStart?.toISOString().split("T")[0] ?? "",
+            applicationEnd: applicationEnd?.toISOString().split("T")[0] ?? "",
         }
     }, [paid, applicationStart, applicationEnd])
-
 
     async function handleSave() {
         if (!internship) return
@@ -94,7 +106,11 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
         if (!vals.applicationEnd) {
             newErrors.applicationEnd = ["End date is required"]
         }
-        if (vals.applicationStart && vals.applicationEnd && new Date(vals.applicationStart) > new Date(vals.applicationEnd)) {
+        if (
+            vals.applicationStart &&
+            vals.applicationEnd &&
+            new Date(vals.applicationStart) > new Date(vals.applicationEnd)
+        ) {
             newErrors.applicationEnd = ["End date must be after start date"]
         }
         if (!vals.location || vals.location.length < 2) {
@@ -114,7 +130,7 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
         try {
             const res = await fetch("/api/internships", {
                 method: "PUT",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     id: internship.id,
                     title: vals.title,
@@ -157,10 +173,10 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                         }}
                     >
                         <motion.div
-                            initial={{opacity: 0, scale: 0.95, y: 20}}
-                            animate={{opacity: 1, scale: 1, y: 0}}
-                            exit={{opacity: 0, scale: 0.95, y: 20}}
-                            transition={{duration: 0.3, ease: "easeOut"}}
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
                             className="bg-slate-900 rounded-2xl"
                         >
                             <div
@@ -171,9 +187,8 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                 }}
                             >
                                 <div className="relative z-10 flex items-center gap-4">
-                                    <div
-                                        className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                                        <Building2 className="h-7 w-7 text-white"/>
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                                        <Building2 className="h-7 w-7 text-white" />
                                     </div>
                                     <div>
                                         <DialogTitle className="text-2xl font-bold text-white mb-1">
@@ -184,23 +199,21 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                         </p>
                                     </div>
                                 </div>
-                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl"/>
+                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
                             </div>
 
                             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
                                 <motion.div
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{delay: 0.1}}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
                                     className="grid gap-6"
                                 >
                                     {/* Title Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <Briefcase className="h-5 w-5"
-                                                       style={{color: "var(--internship-modal-gradient-from)"}}/>
-                                            <Label className="text-base font-semibold text-slate-200">Position
-                                                Title</Label>
+                                            <Briefcase className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Position Title</Label>
                                         </div>
                                         <Input
                                             ref={titleRef}
@@ -217,11 +230,11 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                         />
                                         {errors.title && (
                                             <motion.p
-                                                initial={{opacity: 0, x: -10}}
-                                                animate={{opacity: 1, x: 0}}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
                                                 className="text-sm text-red-400 flex items-center gap-2"
                                             >
-                                                <AlertCircle className="h-3 w-3"/>
+                                                <AlertCircle className="h-3 w-3" />
                                                 {errors.title[0]}
                                             </motion.p>
                                         )}
@@ -230,10 +243,8 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                     {/* Description Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <FileText className="h-5 w-5"
-                                                      style={{color: "var(--internship-modal-gradient-from)"}}/>
-                                            <Label
-                                                className="text-base font-semibold text-slate-200">Description</Label>
+                                            <FileText className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Description</Label>
                                         </div>
                                         <Textarea
                                             ref={descriptionRef}
@@ -251,11 +262,11 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                         />
                                         {errors.description && (
                                             <motion.p
-                                                initial={{opacity: 0, x: -10}}
-                                                animate={{opacity: 1, x: 0}}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
                                                 className="text-sm text-red-400 flex items-center gap-2"
                                             >
-                                                <AlertCircle className="h-3 w-3"/>
+                                                <AlertCircle className="h-3 w-3" />
                                                 {errors.description[0]}
                                             </motion.p>
                                         )}
@@ -264,23 +275,41 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <Label className="text-base font-semibold text-slate-200">Applications
-                                                    Open</Label>
+                                                <CalendarIcon className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Applications Open</Label>
                                             </div>
-                                            <Input
-                                                type="date"
-                                                value={applicationStart}
-                                                onChange={(e) => setApplicationStart(e.target.value)}
-                                                readOnly={userType === "Student"}
-                                                className="rounded-xl border border-slate-700 bg-slate-800/50 text-white focus:ring-2 py-3"
-                                            />
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        disabled={userType === "Student"}
+                                                        className="w-full justify-start text-left font-normal rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800 py-6"
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {applicationStart ? (
+                                                            format(applicationStart, "PPP")
+                                                        ) : (
+                                                            <span className="text-slate-500">Pick a date</span>
+                                                        )}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={applicationStart}
+                                                        onSelect={setApplicationStart}
+                                                        initialFocus
+                                                        className="rounded-xl"
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
                                             {errors.applicationStart && (
                                                 <motion.p
-                                                    initial={{opacity: 0, x: -10}}
-                                                    animate={{opacity: 1, x: 0}}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
                                                     className="text-sm text-red-400 flex items-center gap-2"
                                                 >
-                                                    <AlertCircle className="h-3 w-3"/>
+                                                    <AlertCircle className="h-3 w-3" />
                                                     {errors.applicationStart[0]}
                                                 </motion.p>
                                             )}
@@ -288,23 +317,42 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
 
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <Label className="text-base font-semibold text-slate-200">Applications
-                                                    Close</Label>
+                                                <CalendarIcon className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Applications Close</Label>
                                             </div>
-                                            <Input
-                                                type="date"
-                                                value={applicationEnd}
-                                                onChange={(e) => setApplicationEnd(e.target.value)}
-                                                readOnly={userType === "Student"}
-                                                className="rounded-xl border border-slate-700 bg-slate-800/50 text-white focus:ring-2 py-3"
-                                            />
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        disabled={userType === "Student"}
+                                                        className="w-full justify-start text-left font-normal rounded-xl border border-slate-700 bg-slate-800/50 text-white hover:bg-slate-800 py-6"
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {applicationEnd ? (
+                                                            format(applicationEnd, "PPP")
+                                                        ) : (
+                                                            <span className="text-slate-500">Pick a date</span>
+                                                        )}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0 bg-slate-800 border-slate-700" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={applicationEnd}
+                                                        onSelect={setApplicationEnd}
+                                                        initialFocus
+                                                        disabled={(date) => (applicationStart ? date < applicationStart : false)}
+                                                        className="rounded-xl"
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
                                             {errors.applicationEnd && (
                                                 <motion.p
-                                                    initial={{opacity: 0, x: -10}}
-                                                    animate={{opacity: 1, x: 0}}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
                                                     className="text-sm text-red-400 flex items-center gap-2"
                                                 >
-                                                    <AlertCircle className="h-3 w-3"/>
+                                                    <AlertCircle className="h-3 w-3" />
                                                     {errors.applicationEnd[0]}
                                                 </motion.p>
                                             )}
@@ -314,10 +362,8 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <MapPin className="h-5 w-5"
-                                                        style={{color: "var(--internship-modal-gradient-from)"}}/>
-                                                <Label
-                                                    className="text-base font-semibold text-slate-200">Location</Label>
+                                                <MapPin className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Location</Label>
                                             </div>
                                             <Input
                                                 ref={locationRef}
@@ -335,11 +381,11 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                             />
                                             {errors.location && (
                                                 <motion.p
-                                                    initial={{opacity: 0, x: -10}}
-                                                    animate={{opacity: 1, x: 0}}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
                                                     className="text-sm text-red-400 flex items-center gap-2"
                                                 >
-                                                    <AlertCircle className="h-3 w-3"/>
+                                                    <AlertCircle className="h-3 w-3" />
                                                     {errors.location[0]}
                                                 </motion.p>
                                             )}
@@ -347,10 +393,8 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
 
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2">
-                                                <GraduationCap className="h-5 w-5"
-                                                               style={{color: "var(--internship-modal-gradient-from)"}}/>
-                                                <Label
-                                                    className="text-base font-semibold text-slate-200">Qualifications</Label>
+                                                <GraduationCap className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                                <Label className="text-base font-semibold text-slate-200">Qualifications</Label>
                                             </div>
                                             <Input
                                                 ref={qualificationsRef}
@@ -370,13 +414,10 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                     </div>
 
                                     {/* Compensation Section */}
-                                    <div
-                                        className="space-y-4 p-6 rounded-xl bg-slate-800/50 border border-slate-700">
+                                    <div className="space-y-4 p-6 rounded-xl bg-slate-800/50 border border-slate-700">
                                         <div className="flex items-center gap-2">
-                                            <DollarSign className="h-5 w-5"
-                                                        style={{color: "var(--internship-modal-gradient-from)"}}/>
-                                            <Label
-                                                className="text-base font-semibold text-slate-200">Compensation</Label>
+                                            <DollarSign className="h-5 w-5" style={{ color: "var(--internship-modal-gradient-from)" }} />
+                                            <Label className="text-base font-semibold text-slate-200">Compensation</Label>
                                         </div>
 
                                         <div className="flex items-center space-x-3">
@@ -392,21 +433,19 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                                     } as React.CSSProperties
                                                 }
                                             />
-                                            <Label className="text-sm font-medium text-slate-300">This is a paid
-                                                internship</Label>
+                                            <Label className="text-sm font-medium text-slate-300">This is a paid internship</Label>
                                         </div>
 
                                         <AnimatePresence>
                                             {paid && (
                                                 <motion.div
-                                                    initial={{opacity: 0, height: 0}}
-                                                    animate={{opacity: 1, height: "auto"}}
-                                                    exit={{opacity: 0, height: 0}}
-                                                    transition={{duration: 0.3}}
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: "auto" }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    transition={{ duration: 0.3 }}
                                                     className="space-y-2"
                                                 >
-                                                    <Label className="text-sm text-slate-300">Salary (per
-                                                        month)</Label>
+                                                    <Label className="text-sm text-slate-300">Salary (per month)</Label>
                                                     <Input
                                                         ref={salaryRef}
                                                         defaultValue=""
@@ -425,11 +464,11 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                                     />
                                                     {errors.salary && (
                                                         <motion.p
-                                                            initial={{opacity: 0, x: -10}}
-                                                            animate={{opacity: 1, x: 0}}
+                                                            initial={{ opacity: 0, x: -10 }}
+                                                            animate={{ opacity: 1, x: 0 }}
                                                             className="text-sm text-red-400 flex items-center gap-2"
                                                         >
-                                                            <AlertCircle className="h-3 w-3"/>
+                                                            <AlertCircle className="h-3 w-3" />
                                                             {errors.salary[0]}
                                                         </motion.p>
                                                     )}
@@ -463,7 +502,7 @@ export function InternshipDetailsModal({open, onClose, internship, userType, onU
                                     >
                                         {isSaving ? (
                                             <div className="flex items-center gap-2">
-                                                <Loader2 className="h-4 w-4 animate-spin"/>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
                                                 Saving...
                                             </div>
                                         ) : (
