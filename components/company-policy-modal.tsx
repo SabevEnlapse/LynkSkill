@@ -172,7 +172,7 @@ export function CompanyPolicyModal({
                             {loading ? (
                                 <>
                                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                                    Saving...
+                                     Saving...
                                 </>
                             ) : (
                                 "I Understand and Agree"
