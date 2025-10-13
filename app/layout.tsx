@@ -18,68 +18,88 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: {
         default: 'LynkSkill – Empowering Students Through Real-World Experience',
-        template: '%s | LynkSkill'
+        template: '%s | LynkSkill',
     },
     description:
-        'LynkSkill connects students with businesses for real-world projects, internships, and collaborations. Gain practical experience, showcase your skills, and grow your professional network.',
+        'LynkSkill connects students with businesses for real-world projects, internships, and collaborations. Gain practical experience, grow your skills, and create meaningful career connections in Bulgaria and worldwide.',
     keywords: [
+        // --- English ---
         'student internships',
         'student projects',
         'business collaboration',
         'student opportunities',
         'skills marketplace',
         'university students',
-        'LynkSkill',
         'real-world learning',
-        'student-business platform'
+        'career development',
+        'professional growth',
+        'student-business platform',
+        'student startup projects',
+        'student networking',
+        'youth innovation',
+        'student tech projects',
+        'digital portfolio',
+        'student community',
+        'education platform',
+        'practical experience',
+        'real projects for students',
+        'internship platform',
+        'LynkSkill',
+        // --- Bulgarian ---
+        'ученически стажове',
+        'ученически проекти',
+        'сътрудничество между ученици и фирми',
+        'възможности за ученици',
+        'платформа за умения',
+        'университетски стажове',
+        'реален опит за ученици',
+        'кариера за ученици',
+        'развитие на умения',
+        'професионално развитие',
+        'ученическа практика',
+        'платформа за ученици и бизнес',
+        'иновативна образователна платформа',
+        'проектно обучение',
+        'училищна кариера',
+        'ученици и бизнес',
+        'практически опит',
+        'младешко развитие',
+        'бъдеще за ученици',
     ],
     authors: [{ name: 'LynkSkill Team', url: 'https://lynkskill.net' }],
     creator: 'LynkSkill',
     publisher: 'LynkSkill',
     metadataBase: new URL('https://lynkskill.net'),
 
-    // Open Graph (Facebook, LinkedIn, etc.)
     openGraph: {
-        title: 'LynkSkill – Students Meet Real-World Experience',
+        title: 'LynkSkill – Where Students and Businesses Connect',
         description:
-            'Connect with businesses, gain hands-on experience, and unlock career opportunities through LynkSkill.',
+            'LynkSkill bridges the gap between students and companies by providing opportunities for internships, real projects, and career growth.',
         url: 'https://lynkskill.net',
         siteName: 'LynkSkill',
         images: [
             {
-                url: '/og-image.jpg',
+                url: '/opengrapgh.png',
                 width: 1200,
                 height: 630,
-                alt: 'LynkSkill – Students and Businesses Connecting'
-            }
+                alt: 'LynkSkill – Students and Businesses Connecting',
+            },
         ],
         locale: 'en_US',
-        type: 'website'
+        type: 'website',
     },
 
-    // Twitter metadata
     twitter: {
         card: 'summary_large_image',
-        title: 'LynkSkill – Where Students and Businesses Connect',
+        title: 'LynkSkill – Empowering Students with Real-World Projects',
         description:
-            'Join LynkSkill to collaborate with companies, build experience, and showcase your skills to the world.',
+            'Join LynkSkill to connect with businesses, gain practical experience, and showcase your skills to the world.',
         creator: '@lynkskill',
-        images: ['/og-image.jpg']
+        images: ['/opengrapgh.png'],
     },
 
-    // Geo & regional targeting (useful if you’re focused on specific regions)
-    other: {
-        'geo.region': 'US',
-        'geo.placename': 'United States',
-        'geo.position': '37.7749;-122.4194', // Example: San Francisco (update as needed)
-        'ICBM': '37.7749, -122.4194',
-    },
-
-    // Favicon + manifest
     icons: {
-        icon: '/favicon.ico',
-        apple: '/apple-touch-icon.png',
-    },
+        icon: '/favicon.ico',},
 
     robots: {
         index: true,
@@ -89,8 +109,12 @@ export const metadata: Metadata = {
             follow: true,
             'max-image-preview': 'large',
             'max-snippet': -1,
-            'max-video-preview': -1
-        }
+            'max-video-preview': -1,
+        },
+    },
+
+    alternates: {
+        canonical: 'https://lynkskill.net',
     },
 }
 
@@ -104,11 +128,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
             <ThemeProvider
                 attribute="class"
-                defaultTheme="system"
+                defaultTheme="dark"
                 enableSystem
                 disableTransitionOnChange
             >
-                {/* Only render RegisterUser on /onboarding */}
                 <OnboardingWrapper />
                 <main>{children}</main>
             </ThemeProvider>

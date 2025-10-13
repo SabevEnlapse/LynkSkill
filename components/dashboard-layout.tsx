@@ -21,6 +21,8 @@ import {ApplicationsTabContent} from "./apply-tab-content"
 import {AssignmentsTabContent} from "./assignments-tab-content"
 import MyExperienceTabContent from "./my-experience-tab-content"
 import {Internship} from "@/app/types"
+// import {AnalyticsTabContent} from "@/components/analytics-tab-content";
+import {LeaderboardTabContent} from "@/components/leaderboard-tab-content";
 
 interface DashboardLayoutProps {
     userType: "Student" | "Company"
@@ -238,13 +240,19 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                     <main className="flex-1 p-4 md:p-6 text-foreground">
                         <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
                             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                                <TabsList className="grid w-full max-w-[650px] grid-cols-5 rounded-2xl p-1">
+                                <TabsList className="grid w-full max-w-[900px] grid-cols-6 rounded-2xl p-1">
                                     <TabsTrigger value="home" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Home
                                     </TabsTrigger>
-                                    <TabsTrigger value="apps" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
-                                        Portfolio
-                                    </TabsTrigger>
+                                    {userType === "Student" ? (
+                                        <TabsTrigger value="apps" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
+                                            Portfolio
+                                        </TabsTrigger>
+                                    ) : (
+                                        <TabsTrigger value="leaderboard" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
+                                            Leaderboard
+                                        </TabsTrigger>
+                                    )}
                                     <TabsTrigger value="files" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         Applied
                                     </TabsTrigger>
@@ -253,6 +261,9 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                     </TabsTrigger>
                                     <TabsTrigger value="learn" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                         My Experience
+                                    </TabsTrigger>
+                                    <TabsTrigger value="analytics" className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
+                                        Analytics
                                     </TabsTrigger>
                                 </TabsList>
                                 <div className="hidden md:flex gap-2">
@@ -291,9 +302,15 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         <CommunityHighlights setActiveTab={setActiveTab}/>
                                     </TabsContent>
 
-                                    <TabsContent value="apps" className="space-y-8 mt-0">
-                                        <Portfolio userType={userType}/>
-                                    </TabsContent>
+                                    {userType === "Student" ? (
+                                        <TabsContent value="apps" className="space-y-8 mt-0">
+                                            <Portfolio userType={userType} />
+                                        </TabsContent>
+                                    ) : (
+                                        <TabsContent value="leaderboard" className="space-y-8 mt-0">
+                                            <LeaderboardTabContent />
+                                        </TabsContent>
+                                    )}
 
                                     <TabsContent value="files" className="space-y-8 mt-0">
                                         <ApplicationsTabContent userType={userType}/>
@@ -306,6 +323,10 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                     <TabsContent value="learn" className="space-y-8 mt-0">
                                         <MyExperienceTabContent/>
                                     </TabsContent>
+
+                                    {/*<TabsContent value="analytics" className="space-y-8 mt-0">*/}
+                                    {/*    <AnalyticsTabContent userType={userType} />*/}
+                                    {/*</TabsContent>*/}
                                 </motion.div>
                             </AnimatePresence>
                         </Tabs>
