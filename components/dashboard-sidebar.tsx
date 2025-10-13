@@ -95,12 +95,6 @@ export function DashboardSidebar({
                                     {item.icon}
                                     <span>{item.title}</span>
                                 </div>
-
-                                {item.badge && (
-                                    <span className="ml-auto rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs text-foreground">
-                                      {item.badge}
-                                    </span>
-                                )}
                             </button>
                         ))}
                 </div>
