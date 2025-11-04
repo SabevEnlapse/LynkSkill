@@ -27,7 +27,7 @@ import {
     Clock3,
     ArrowRight,
     Sparkles,
-    Calendar,
+    Calendar, FileText,
 } from "lucide-react"
 import ApplyButton from "@/components/ApplyBtn"
 
@@ -227,8 +227,8 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                                            <CardHeader className="pb-4 pt-6 px-6 relative z-10">
-                                                <div className="flex items-center justify-between mb-4">
+                                            <CardHeader className="pt-6 relative z-10">
+                                                <div className="flex items-center justify-between">
                                                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                                         {userType === "Company" ? (
                                                             <Building2 className="h-7 w-7 text-white" />
@@ -272,94 +272,104 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                 </div>
                                             </CardHeader>
 
-                                            <CardContent className="flex-1 flex flex-col w-full gap-4 break-words relative z-10 px-6">
-                                                <CardTitle className="text-xl font-bold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 leading-tight">
+                                            <CardContent className="flex-1 flex flex-col w-full gap-3 break-words relative z-10 px-5 py-4">
+                                                {/* Title */}
+                                                <CardTitle className="text-lg font-semibold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                                                    <Briefcase className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                                                     {item.title}
                                                 </CardTitle>
-                                                <CardDescription className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                                                    {item.description}
+
+                                                {/* Company */}
+                                                {item.company && (
+                                                    <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                                        <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                        <span className="truncate">{item.company.name}</span>
+                                                    </p>
+                                                )}
+
+                                                {/* Description */}
+                                                <CardDescription className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex items-start gap-2">
+                                                    <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-[2px]" />
+                                                    <span>{item.description}</span>
                                                 </CardDescription>
 
-                                                <div className="mt-2 space-y-2.5 text-sm">
-                                                    <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                        <div className="p-1.5 rounded-lg bg-purple-500/10">
+                                                {/* Meta info */}
+                                                <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                                                    {item.location && (
+                                                        <div className="flex items-center gap-1.5">
                                                             <MapPin className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                                            <span>{item.location}</span>
                                                         </div>
-                                                        <span className="font-semibold">{item.location}</span>
-                                                    </div>
+                                                    )}
+
                                                     {item.qualifications && (
-                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                            <div className="p-1.5 rounded-lg bg-blue-500/10">
-                                                                <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                            </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <GraduationCap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                             <span className="line-clamp-1">{item.qualifications}</span>
                                                         </div>
                                                     )}
+
                                                     {item.paid && (
-                                                        <div className="flex items-center gap-2.5">
-                                                            <div className="p-1.5 rounded-lg bg-green-500/10">
-                                                                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                                            </div>
-                                                            <span className="font-bold text-green-600 dark:text-green-400">
-                                  ${item.salary ?? "Negotiable"}
-                                </span>
+                                                        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                                                            <DollarSign className="h-4 w-4" />
+                                                            <span className="font-medium">
+                                                              ${item.salary ?? "Negotiable"}
+                                                            </span>
                                                         </div>
                                                     )}
+
                                                     {item.duration && (
-                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                            <div className="p-1.5 rounded-lg bg-purple-500/10">
-                                                                <Timer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                                                            </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Timer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                                                             <span>{item.duration}</span>
                                                         </div>
                                                     )}
+
                                                     {item.grade && (
-                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                            <div className="p-1.5 rounded-lg bg-blue-500/10">
-                                                                <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                            </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                             <span>Grade: {item.grade}</span>
                                                         </div>
                                                     )}
+
                                                     {item.skills && (
-                                                        <div className="flex items-center gap-2.5 text-muted-foreground">
-                                                            <div className="p-1.5 rounded-lg bg-purple-500/10">
-                                                                <Wrench className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                                                            </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <Wrench className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                                                             <span className="line-clamp-1">{item.skills}</span>
                                                         </div>
                                                     )}
-                                                    {item.applicationStart && item.applicationEnd && (
-                                                        <div className="space-y-2 mt-4">
-                                                            {/* Dates row */}
-                                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                                <div className="p-1.5 rounded-lg bg-blue-500/10">
+
+                                                    {/* Application progress */}
+                                                    {item.applicationStart && item.applicationEnd && (() => {
+                                                        const start = new Date(item.applicationStart).getTime()
+                                                        const end = new Date(item.applicationEnd).getTime()
+                                                        const now = Date.now()
+                                                        const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
+
+                                                        return (
+                                                            <div className="mt-3 space-y-1.5">
+                                                                <div className="flex items-center gap-1.5">
                                                                     <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                                    <span className="text-xs font-medium">
+                                                                        {new Date(item.applicationStart).toLocaleDateString()} –{" "}
+                                                                        {new Date(item.applicationEnd).toLocaleDateString()}
+                                                                    </span>
                                                                 </div>
-                                                                <span className="font-medium">
-                                    {new Date(item.applicationStart).toLocaleDateString()} –{" "}
-                                                                    {new Date(item.applicationEnd).toLocaleDateString()}
-                                  </span>
+                                                                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className={`h-full transition-all ${
+                                                                            progress < 70
+                                                                                ? "bg-blue-500"
+                                                                                : progress < 100
+                                                                                    ? "bg-yellow-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
+                                                                        style={{ width: `${progress}%` }}
+                                                                    />
+                                                                </div>
                                                             </div>
-
-                                                            {/* Progress bar */}
-                                                            {(() => {
-                                                                const start = new Date(item.applicationStart).getTime()
-                                                                const end = new Date(item.applicationEnd).getTime()
-                                                                const now = Date.now()
-                                                                const progress = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100))
-
-                                                                return (
-                                                                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                                                        <div
-                                                                            className={`h-full ${progress < 70 ? "bg-blue-500" : progress < 100 ? "bg-yellow-500" : "bg-red-500"}`}
-                                                                            style={{ width: `${progress}%` }}
-                                                                        />
-                                                                    </div>
-                                                                )
-                                                            })()}
-                                                        </div>
-                                                    )}
+                                                        )
+                                                    })()}
                                                 </div>
                                             </CardContent>
 
@@ -452,26 +462,40 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                             })}
                     </div>
 
-                    {hasMore && !isLoading && (
+                    {!isLoading && finalInternships.length > 4 && (
                         <div className="flex justify-center gap-4 pt-6">
-                            <Button
-                                size="lg"
-                                variant="outline"
-                                onClick={() => setDisplayCount((prev) => prev + 4)}
-                                className="rounded-2xl px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-500 bg-transparent group"
-                            >
-                                See More
-                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                            </Button>
+                            {displayCount < finalInternships.length ? (
+                                <>
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        onClick={() => setDisplayCount((prev) => prev + 4)}
+                                        className="rounded-2xl px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-500 bg-transparent group"
+                                    >
+                                        See More
+                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
 
-                            <Button
-                                size="lg"
-                                onClick={() => setDisplayCount(finalInternships.length)}
-                                className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
-                            >
-                                See All ({finalInternships.length})
-                                <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                            </Button>
+                                    <Button
+                                        size="lg"
+                                        onClick={() => setDisplayCount(finalInternships.length)}
+                                        className="rounded-2xl px-8 py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white group"
+                                    >
+                                        See All ({finalInternships.length})
+                                        <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    onClick={() => setDisplayCount(4)}
+                                    className="rounded-2xl px-8 py-6 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-purple-500 bg-transparent group"
+                                >
+                                    Show Less
+                                    <ArrowRight className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform rotate-180" />
+                                </Button>
+                            )}
                         </div>
                     )}
                 </>

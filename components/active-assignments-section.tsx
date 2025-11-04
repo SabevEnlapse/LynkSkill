@@ -18,9 +18,15 @@ type ApiProject = {
         endDate: string | null
     }
     student: { name: string; email: string }
-    status: "ONGOING" | "COMPLETED"
+    status: "ONGOING" | "COMPLETED" | "PENDING"
     createdAt: string
+    assignment?: {
+        title: string
+        description: string
+        dueDate: string
+    } | null
 }
+
 
 interface ActiveProjectsSectionProps {
     setActiveTab: (tab: string) => void
@@ -193,6 +199,15 @@ export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSection
                                                                 <h4 className="font-semibold text-base group-hover:text-[var(--experience-accent)] transition-colors leading-tight">
                                                                     {proj.internship.title}
                                                                 </h4>
+                                                                {proj.assignment && (
+                                                                    <div className="mt-2 text-sm text-muted-foreground space-y-1">
+                                                                        <p className="font-medium text-foreground">Assignment: {proj.assignment.title}</p>
+                                                                        <p>{proj.assignment.description}</p>
+                                                                        <p className="text-xs italic">
+                                                                            Due: {new Date(proj.assignment.dueDate).toLocaleDateString("en-US")}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
                                                                 <p className="text-sm text-muted-foreground font-medium">
                                                                     {proj.internship.company?.name || "Unknown Company"}
                                                                 </p>
@@ -225,8 +240,8 @@ export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSection
                                                                 </div>
                                                                 {details.totalDays ? (
                                                                     <span className="text-sm font-semibold text-[var(--experience-accent)]">
-                                    {details.progress}%
-                                  </span>
+                                                                        {details.progress}%
+                                                                    </span>
                                                                 ) : (
                                                                     <span className="text-xs italic text-muted-foreground">Ongoing</span>
                                                                 )}

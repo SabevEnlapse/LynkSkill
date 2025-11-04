@@ -2,11 +2,22 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createClient } from "@supabase/supabase-js"
 import { currentUser } from "@clerk/nextjs/server"
+import slugify from "slugify" // ✅ make sure to install this
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// ✅ Safe and clean filename sanitizer using slugify
+const sanitizeFileName = (name: string) => {
+    // Split filename and extension safely
+    const [base, ext] = name.split(/\.(?=[^\.]+$)/)
+    // Convert to URL-safe, lowercase slug
+    const safeBase = slugify(base, { lower: true, strict: true })
+    // Reattach extension (if any)
+    return `${safeBase}.${ext || ""}`
+}
 
 export async function POST(
     req: Request,
@@ -36,15 +47,13 @@ export async function POST(
         const files = formData.getAll("files") as File[]
 
         if (!files || files.length === 0) {
-            return NextResponse.json(
-                { error: "No files provided" },
-                { status: 400 }
-            )
+            return NextResponse.json({ error: "No files provided" }, { status: 400 })
         }
 
         const internship = await prisma.internship.findUnique({
             where: { id: internshipId },
         })
+
         if (!internship) {
             return NextResponse.json(
                 { error: "Internship not found" },
@@ -66,8 +75,7 @@ export async function POST(
                     {
                         error:
                             "You cannot upload an assignment for an internship you haven’t applied to.",
-                        hint:
-                            "Please apply for this internship first to submit your work.",
+                        hint: "Please apply for this internship first to submit your work.",
                     },
                     { status: 403 }
                 )
@@ -109,13 +117,15 @@ export async function POST(
             })
         }
 
-        // ✅ Upload files
+        // ✅ Upload files safely
         const uploadedFilesData = []
 
         for (const file of files) {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
-            const filePath = `${assignment.id}/${Date.now()}-${file.name}`
+
+            const safeFileName = sanitizeFileName(file.name)
+            const filePath = `${assignment.id}/${Date.now()}-${safeFileName}`
 
             const { error: uploadError } = await supabase.storage
                 .from("assignments-files")
@@ -131,7 +141,7 @@ export async function POST(
                 data: {
                     assignmentId: assignment.id,
                     userId: dbUser.id,
-                    name: file.name,
+                    name: file.name, // keep original visible name
                     size: file.size,
                     url: publicUrlData.publicUrl,
                 },

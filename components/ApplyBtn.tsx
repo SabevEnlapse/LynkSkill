@@ -80,7 +80,7 @@ export default function ApplyButton({ internshipId, onApplied, goToPortfolioTab 
                 onClick={handleApply}
                 disabled={isApplying}
                 size="lg"
-                className="flex-1 rounded-2xl py-6 font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                className="flex-1 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
             >
                 {isApplying ? (
                     <>

@@ -1,4 +1,5 @@
 export interface Internship {
+    company: { name: string } | null
     id: string
     companyId: string
     title: string

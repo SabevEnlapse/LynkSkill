@@ -292,13 +292,13 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                                         Leaderboard
                                     </TabsTrigger>
                                 )}
-                                <TabsTrigger value="projects"
-                                             className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
-                                    Assignments
-                                </TabsTrigger>
                                 <TabsTrigger value="files"
                                              className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
                                     Applied
+                                </TabsTrigger>
+                                <TabsTrigger value="projects"
+                                             className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
+                                    Assignments
                                 </TabsTrigger>
                                 <TabsTrigger value="learn"
                                              className="rounded-xl cursor-pointer data-[state=active]:rounded-xl">
@@ -408,7 +408,6 @@ export function DashboardLayout({userType, children}: DashboardLayoutProps) {
                     userType={userType}
                 />
             )}
-
         </div>
     )
 }
