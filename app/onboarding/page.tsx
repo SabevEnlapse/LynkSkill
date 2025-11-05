@@ -283,16 +283,24 @@ export default function OnboardingPage() {
                 }),
             })
 
+            let data: any = null
+            try {
+                data = await res.json()
+            } catch {
+                // If response is empty or invalid JSON, skip
+                console.warn("⚠️ API returned non-JSON or empty response")
+            }
+
             if (!res.ok) {
-                const data = await res.json()
-                throw new Error(data.error || "Failed to accept policies")
+                const msg = data?.error || `Request failed with status ${res.status}`
+                throw new Error(msg)
             }
 
             setStudentPolicyAccepted(true)
             setShowStudentPolicyModal(false)
         } catch (err) {
-            console.error(err)
-            setError("Failed to accept policies")
+            console.error("❌ handleAcceptStudentPolicies error:", err)
+            setError(err instanceof Error ? err.message : "Failed to accept policies")
         }
     }
 
