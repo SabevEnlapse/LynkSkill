@@ -172,7 +172,7 @@ export function LeaderboardTabContent() {
                                                         } overflow-hidden transition-all duration-300`}
                                                     >
                                                         <img
-                                                            src={student.imageUrl || "/placeholder.svg?height=128&width=128"}
+                                                            src={student.imageUrl || "/placeholder.png?height=128&width=128"}
                                                             alt={student.name}
                                                             className="w-full h-full object-cover"
                                                         />
