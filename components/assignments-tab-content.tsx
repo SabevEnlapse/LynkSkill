@@ -243,7 +243,7 @@ export function AssignmentsTabContent() {
                                             }}
                                             title="Quick View"
                                             aria-label="Quick View"
-                                            className="absolute top-3 right-3 z-20 bg-background/70 backdrop-blur-md hover:bg-background/90 p-2 rounded-xl border border-border transition-all duration-200 hover:scale-105"
+                                            className="absolute right-2 bottom-2 z-20 bg-background/70 backdrop-blur-md hover:bg-background/90 p-2 rounded-xl border border-border transition-all duration-200 hover:scale-105"
                                         >
                                             <Eye className="w-4 h-4 text-muted-foreground" />
                                         </button>
