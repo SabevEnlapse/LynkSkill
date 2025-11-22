@@ -1,16 +1,19 @@
-// For applications and internships related to a company
+// app/api/company/applications/route.ts
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
 export async function GET() {
     try {
+        // Authenticate
         const { userId } = await auth()
         if (!userId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+        // Find user
         const companyUser = await prisma.user.findUnique({
             where: { clerkId: userId },
+            select: { id: true },
         })
         if (!companyUser)
             return NextResponse.json(
@@ -18,49 +21,53 @@ export async function GET() {
                 { status: 404 }
             )
 
-        // Find the company owned by this user
+        // Find company owned by the user
         const company = await prisma.company.findFirst({
             where: { ownerId: companyUser.id },
+            select: { id: true },
         })
         if (!company)
-            return NextResponse.json({ error: "Company not found" }, { status: 404 })
+            return NextResponse.json(
+                { error: "Company not found" },
+                { status: 404 }
+            )
 
-        // Get all internship IDs belonging to this company
-        const internshipIds = (
-            await prisma.internship.findMany({
-                where: { companyId: company.id },
-                select: { id: true },
-            })
-        ).map((i) => i.id)
-
-        // Fetch applications for these internships
+        // Fetch ALL applications for internships owned by this company
         const applications = await prisma.application.findMany({
-            where: { internshipId: { in: internshipIds } },
+            where: {
+                internship: { companyId: company.id },
+            },
             include: {
                 internship: {
-                    include: { company: true },
+                    include: {
+                        company: true,
+                    },
                 },
                 student: {
                     include: {
                         assignments: {
-                            include: {
-                                submissions: true, // ✅ note: correct field name from your schema
+                            select: {
+                                internshipId: true,
+                                submissions: {
+                                    select: { id: true }, // only check existence, no heavy fetch
+                                },
                             },
                         },
+                        profile: true,
                     },
                 },
             },
             orderBy: { createdAt: "desc" },
         })
 
-        // Add `hasUploadedFiles` flag
+        // Compute "hasUploadedFiles" correctly
         const formatted = applications.map((app) => {
             const hasUploadedFiles = app.student.assignments.some(
                 (a) =>
                     a.internshipId === app.internshipId &&
-                    a.submissions &&
                     a.submissions.length > 0
             )
+
             return { ...app, hasUploadedFiles }
         })
 

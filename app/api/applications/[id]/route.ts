@@ -19,28 +19,41 @@ export async function PATCH(
             return NextResponse.json({ error: "Invalid status" }, { status: 400 })
         }
 
-        // Find the application and its relations
-        const application = await prisma.application.findUnique({
+        // ✅ Load EVERYTHING in one single query
+        const data = await prisma.application.findUnique({
             where: { id },
-            include: { internship: true, student: true },
+            include: {
+                internship: true,
+                student: {
+                    include: {
+                        assignments: {
+                            where: { internshipId: undefined }, // temporary, overwritten below
+                            include: { submissions: { select: { id: true } } },
+                        },
+                    },
+                },
+                project: true,
+            },
         })
-        if (!application)
+
+        if (!data)
             return NextResponse.json(
                 { error: "Application not found" },
                 { status: 404 }
             )
 
-        // ✅ Check if the student uploaded any assignment files
-        const assignment = await prisma.assignment.findFirst({
+        // Fix the internshipId filter dynamically (Prisma limitation)
+        const assignments = await prisma.assignment.findMany({
             where: {
-                internshipId: application.internshipId,
-                studentId: application.studentId,
+                internshipId: data.internshipId,
+                studentId: data.studentId,
             },
-            include: { submissions: true },
+            include: { submissions: { select: { id: true } } },
         })
 
-        const hasUploadedFiles =
-            assignment && assignment.submissions && assignment.submissions.length > 0
+        const hasUploadedFiles = assignments.some(
+            (a) => a.submissions.length > 0
+        )
 
         if (!hasUploadedFiles) {
             return NextResponse.json(
@@ -52,31 +65,27 @@ export async function PATCH(
             )
         }
 
-        // ✅ Update application status
+        // ✅ Update application
         const updatedApplication = await prisma.application.update({
             where: { id },
             data: { status },
             include: { internship: true, student: true },
         })
 
-        // ✅ If approved, create project (if not exists)
-        if (status === "APPROVED") {
-            const existingProject = await prisma.project.findUnique({
-                where: { applicationId: updatedApplication.id },
+        // ---------------------------------------------
+        // CREATE PROJECT IF APPROVED AND NOT EXISTING
+        // ---------------------------------------------
+        if (status === "APPROVED" && !data.project) {
+            await prisma.project.create({
+                data: {
+                    title: updatedApplication.internship.title,
+                    description: updatedApplication.internship.description,
+                    internshipId: updatedApplication.internshipId,
+                    applicationId: updatedApplication.id,
+                    studentId: updatedApplication.studentId,
+                    companyId: updatedApplication.internship.companyId,
+                },
             })
-
-            if (!existingProject) {
-                await prisma.project.create({
-                    data: {
-                        title: updatedApplication.internship.title,
-                        description: updatedApplication.internship.description,
-                        internshipId: updatedApplication.internshipId,
-                        applicationId: updatedApplication.id,
-                        studentId: updatedApplication.studentId,
-                        companyId: updatedApplication.internship.companyId,
-                    },
-                })
-            }
         }
 
         return NextResponse.json(updatedApplication)
