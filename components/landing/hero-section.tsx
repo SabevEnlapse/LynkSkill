@@ -5,14 +5,11 @@ import { Button } from "@/components/ui/button"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { 
     Sparkles, 
-    ArrowRight, 
-    Users, 
-    Briefcase, 
+    ArrowRight,
     Star, 
     Zap, 
     Target,
     TrendingUp,
-    CheckCircle,
     Play
 } from "lucide-react"
 import { useState, useEffect } from "react"
@@ -309,24 +306,24 @@ export function HeroSection() {
                 </motion.div>
             </motion.div>
 
-            {/* Enhanced Scroll indicator */}
-            <motion.div
-                className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 cursor-pointer hidden md:flex flex-col items-center gap-2"
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            >
-                <span className="text-sm text-muted-foreground font-medium">Scroll to explore</span>
-                <motion.div 
-                    className="w-8 h-12 border-2 border-white/30 rounded-full flex items-start justify-center p-2 hover:border-white/50 transition-colors duration-300"
-                    whileHover={{ scale: 1.1 }}
-                >
-                    <motion.div
-                        className="w-2 h-2 bg-gradient-to-b from-purple-400 to-blue-400 rounded-full"
-                        animate={{ y: [0, 20, 0] }}
-                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                    />
-                </motion.div>
-            </motion.div>
+            {/*/!* Enhanced Scroll indicator *!/*/}
+            {/*<motion.div*/}
+            {/*    className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 cursor-pointer hidden md:flex flex-col items-center gap-2"*/}
+            {/*    animate={{ y: [0, 8, 0] }}*/}
+            {/*    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}*/}
+            {/*>*/}
+            {/*    <span className="text-sm text-muted-foreground font-medium">Scroll to explore</span>*/}
+            {/*    <motion.div */}
+            {/*        className="w-8 h-12 border-2 border-white/30 rounded-full flex items-start justify-center p-2 hover:border-white/50 transition-colors duration-300"*/}
+            {/*        whileHover={{ scale: 1.1 }}*/}
+            {/*    >*/}
+            {/*        <motion.div*/}
+            {/*            className="w-2 h-2 bg-gradient-to-b from-purple-400 to-blue-400 rounded-full"*/}
+            {/*            animate={{ y: [0, 20, 0] }}*/}
+            {/*            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}*/}
+            {/*        />*/}
+            {/*    </motion.div>*/}
+            {/*</motion.div>*/}
         </section>
     )
 }
