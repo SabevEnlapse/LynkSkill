@@ -274,7 +274,7 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
                             >
-                                <TabsList className="relative h-auto backdrop-blur-xl border border-purple-500/20 p-1.5 rounded-2xl shadow-lg overflow-hidden bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10">
+                                <TabsList className="relative h-auto gap-2 backdrop-blur-xl border border-purple-500/20 p-1.5 rounded-2xl shadow-lg overflow-hidden bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10">
                                     {/* Animated gradient background */}
                                     <motion.div
                                         className="absolute inset-0 opacity-30"
@@ -290,7 +290,7 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
 
                                     <TabsTrigger
                                         value="home"
-                                        className="group cursor-pointer relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-purple-500/10 hover:scale-105 data-[state=active]:scale-105"
+                                        className="group cursor-pointer relative flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-purple-500/10 hover:scale-105 data-[state=active]:scale-105"
                                     >
                                         <Home className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(147,51,234,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(147,51,234,0.6)]" />
                                         <span className="relative">
