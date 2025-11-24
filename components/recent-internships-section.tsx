@@ -128,6 +128,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                         onClick={() => setFilter("all")}
                     >
                         <Layers className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
+                        <Layers className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                         All
                     </Button>
 
@@ -220,7 +221,7 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                                 if (!confirm) return
 
                                                                 try {
-                                                                    const res = await fetch("/api/internships", {
+                                                                    const res = await fetch("/api/internship/delete", {
                                                                         method: "DELETE",
                                                                         headers: {
                                                                             "Content-Type": "application/json",
