@@ -20,7 +20,7 @@ export async function GET() {
         if (!student)
             return NextResponse.json({ error: "Student not found" }, { status: 404 })
 
-        // Cleanup moved INSIDE the function and SAFE
+        // Auto delete expired test-only applications
         await prisma.application.deleteMany({
             where: {
                 internship: {
@@ -29,24 +29,13 @@ export async function GET() {
             }
         })
 
-        // Main query (light, minimal selection)
+        // Main applications query
         const applications = await prisma.application.findMany({
             where: { studentId: student.id },
             orderBy: { createdAt: "desc" },
-            select: {
-                id: true,
-                status: true,
-                createdAt: true,
-                internshipId: true,
+            include: {
                 internship: {
-                    select: {
-                        id: true,
-                        title: true,
-                        location: true,
-                        paid: true,
-                        salary: true,
-                        applicationStart: true,
-                        applicationEnd: true,
+                    include: {
                         company: {
                             select: {
                                 id: true,
@@ -55,11 +44,33 @@ export async function GET() {
                             }
                         }
                     }
+                },
+                student: {
+                    include: {
+                        assignments: {
+                            include: {
+                                submissions: true
+                            }
+                        }
+                    }
                 }
             }
         })
 
-        return NextResponse.json(applications)
+        // Compute hasUploadedFiles
+        const formatted = applications.map(app => {
+            const assignmentsForThisInternship = app.student.assignments.filter(
+                (a) => a.internshipId === app.internshipId
+            )
+
+            const hasUploadedFiles = assignmentsForThisInternship.some(
+                (a) => a.submissions.length > 0
+            )
+
+            return { ...app, hasUploadedFiles }
+        })
+
+        return NextResponse.json(formatted)
     } catch (err) {
         console.error("GET /api/applications/me error:", err)
         return NextResponse.json(

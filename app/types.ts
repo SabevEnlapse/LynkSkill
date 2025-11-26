@@ -17,6 +17,7 @@ export interface Internship {
 }
 
 export interface Application {
+    assignmentRequired: boolean;
     createdAt: number;
     id: string
     status: "PENDING" | "APPROVED" | "REJECTED"

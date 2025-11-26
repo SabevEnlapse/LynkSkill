@@ -445,8 +445,11 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                             </div>
 
                                             {/* CHANGE: moved warning message above buttons for better visibility when there's no file uploaded */}
-                                            {userType === "Company" && app.status === "PENDING" && !app.hasUploadedFiles && (
-                                                <div
+                                            {userType === "Company" &&
+                                                app.status === "PENDING" &&
+                                                app.assignmentRequired &&
+                                                !app.hasUploadedFiles && (
+                                                    <div
                                                     className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl">
                                                     <p className="text-xs text-amber-800 dark:text-amber-200 flex items-center gap-2">
                                                         <span className="text-base">⚠️</span>
@@ -462,30 +465,30 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                             <>
                                                                 <Button
                                                                     size="sm"
-                                                                    disabled={!app.hasUploadedFiles}
+                                                                    disabled={app.assignmentRequired && !app.hasUploadedFiles}
                                                                     onClick={() => updateApplication(app.id, "APPROVED")}
                                                                     className={`flex-1 font-semibold transition-all duration-200 ${
-                                                                        app.hasUploadedFiles
-                                                                            ? "bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl"
-                                                                            : "bg-muted text-muted-foreground cursor-not-allowed"
+                                                                        app.assignmentRequired && !app.hasUploadedFiles
+                                                                            ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                                                            : "bg-green-600 hover:bg-green-600/70 text-[var(--application-approved-foreground)] shadow-lg hover:shadow-xl"
                                                                     }`}
                                                                 >
-                                                                    <CheckCircle className="w-4 h-4 mr-2"/>
+                                                                    <CheckCircle className="w-4 h-4 mr-2" />
                                                                     Approve
                                                                 </Button>
 
                                                                 <Button
                                                                     size="sm"
                                                                     variant="outline"
-                                                                    disabled={!app.hasUploadedFiles}
+                                                                    disabled={app.assignmentRequired && !app.hasUploadedFiles}
                                                                     onClick={() => updateApplication(app.id, "REJECTED")}
                                                                     className={`flex-1 font-semibold transition-all duration-200 ${
-                                                                        app.hasUploadedFiles
-                                                                            ? "border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)]"
-                                                                            : "border-muted text-muted-foreground cursor-not-allowed"
+                                                                        app.assignmentRequired && !app.hasUploadedFiles
+                                                                            ? "border-muted text-muted-foreground cursor-not-allowed"
+                                                                            : "border-2 border-[var(--application-rejected)] text-[var(--application-rejected)] hover:bg-[var(--application-rejected)] hover:text-[var(--application-rejected-foreground)]"
                                                                     }`}
                                                                 >
-                                                                    <XCircle className="w-4 h-4 mr-2"/>
+                                                                    <XCircle className="w-4 h-4 mr-2" />
                                                                     Reject
                                                                 </Button>
                                                             </>

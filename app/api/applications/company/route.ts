@@ -5,12 +5,11 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
     try {
-        // Authenticate
         const { userId } = await auth()
         if (!userId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        // Find user
+        // Find the company user
         const companyUser = await prisma.user.findUnique({
             where: { clerkId: userId },
             select: { id: true },
@@ -21,7 +20,7 @@ export async function GET() {
                 { status: 404 }
             )
 
-        // Find company owned by the user
+        // Find the company
         const company = await prisma.company.findFirst({
             where: { ownerId: companyUser.id },
             select: { id: true },
@@ -32,7 +31,7 @@ export async function GET() {
                 { status: 404 }
             )
 
-        // Fetch ALL applications for internships owned by this company
+        // Fetch company applications
         const applications = await prisma.application.findMany({
             where: {
                 internship: { companyId: company.id },
@@ -45,22 +44,21 @@ export async function GET() {
                 },
                 student: {
                     include: {
+                        profile: true,
                         assignments: {
-                            select: {
-                                internshipId: true,
+                            include: {
                                 submissions: {
-                                    select: { id: true }, // only check existence, no heavy fetch
+                                    select: { id: true },
                                 },
                             },
                         },
-                        profile: true,
                     },
                 },
             },
             orderBy: { createdAt: "desc" },
         })
 
-        // Compute "hasUploadedFiles" correctly
+        // Compute hasUploadedFiles
         const formatted = applications.map((app) => {
             const hasUploadedFiles = app.student.assignments.some(
                 (a) =>
@@ -68,8 +66,16 @@ export async function GET() {
                     a.submissions.length > 0
             )
 
-            return { ...app, hasUploadedFiles }
+            // Detect whether the internship actually has an assignment
+            const assignmentRequired = Boolean(app.internship.testAssignmentTitle)
+
+            return {
+                ...app,
+                hasUploadedFiles,
+                assignmentRequired,
+            }
         })
+
 
         return NextResponse.json(formatted)
     } catch (err) {
