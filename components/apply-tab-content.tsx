@@ -920,8 +920,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
                                                         </div>
                                                     </div>
 
-                                                    {/* --- Assignment Link --- */}
-                                                    {showCompany.internship && showCompany.company && app.hasUploadedFiles && (
+                                                    {showCompany?.application?.hasUploadedFiles && (
     <div className="mt-4">
         <Button
             onClick={() =>
@@ -938,6 +937,7 @@ export function ApplicationsTabContent({userType}: ApplicationsTabContentProps) 
         </Button>
     </div>
 )}
+
                                                 </>
                                             )}
                                         </motion.div>
