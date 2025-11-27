@@ -325,13 +325,13 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                         <span>Applied</span>
                                     </TabsTrigger>
 
-                                    <TabsTrigger
+                                    {/* <TabsTrigger
                                         value="projects"
                                         className="group cursor-pointer relative flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 data-[state=inactive]:text-muted-foreground hover:text-foreground hover:bg-purple-500/10 hover:scale-105 data-[state=active]:scale-105"
                                     >
                                         <ClipboardList className="h-4 w-4 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(147,51,234,0.8)] group-hover:drop-shadow-[0_0_6px_rgba(147,51,234,0.6)]" />
                                         <span>Assignments</span>
-                                    </TabsTrigger>
+                                    </TabsTrigger> */}
 
                                     <TabsTrigger
                                         value="learn"
@@ -403,13 +403,13 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
                                             <span className="whitespace-nowrap text-center">Applied</span>
                                         </TabsTrigger>
 
-                                        <TabsTrigger
+                                        {/* <TabsTrigger
                                             value="projects"
                                             className="group relative flex flex-col items-center justify-center gap-1 px-3 py-2.5 rounded-xl font-semibold text-[10px] leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/30 data-[state=inactive]:text-muted-foreground flex-1 min-w-0 active:scale-95 hover:bg-purple-500/10"
                                         >
                                             <ClipboardList className="h-5 w-5 flex-shrink-0 transition-all duration-300 group-data-[state=active]:scale-110 group-data-[state=active]:drop-shadow-[0_0_8px_rgba(147,51,234,0.8)]" />
                                             <span className="whitespace-nowrap text-center">Tasks</span>
-                                        </TabsTrigger>
+                                        </TabsTrigger> */}
 
                                         <TabsTrigger
                                             value="learn"
