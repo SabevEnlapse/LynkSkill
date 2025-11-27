@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(req: Request) {
     try {
-        const { id } = await req.json();
+        // Get ID from URL query instead of req.json()
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get("id");
 
         if (!id) {
             return NextResponse.json(
@@ -26,6 +28,7 @@ export async function DELETE(req: Request) {
             );
         }
 
+        // Delete internship
         await prisma.internship.delete({
             where: { id },
         });
@@ -34,6 +37,9 @@ export async function DELETE(req: Request) {
 
     } catch (err) {
         console.error("Delete internship error:", err);
-        return NextResponse.json({ error: "Failed to delete internship" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Failed to delete internship" },
+            { status: 500 }
+        );
     }
 }
