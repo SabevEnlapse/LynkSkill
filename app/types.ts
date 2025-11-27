@@ -17,23 +17,37 @@ export interface Internship {
 }
 
 export interface Application {
-    assignmentRequired: boolean;
-    createdAt: number;
     id: string
+    createdAt: number
     status: "PENDING" | "APPROVED" | "REJECTED"
+
     studentId: string
     internshipId: string
+
+    // Backend computed fields
+    assignmentRequired?: boolean
     hasUploadedFiles?: boolean
+
+    // Optional project data (from assignment page)
+    project?: {
+        id: string
+        title: string
+    } | null
+
     student?: {
-        name: string | undefined;
         id: string
         email: string
+        name?: string
         profile?: { name: string }
     }
+
     internship?: {
         id: string
         title: string
-        company?: { id: string; name: string }
+        company?: {
+            id: string
+            name: string
+        }
     }
 }
 
