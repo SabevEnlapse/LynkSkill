@@ -4,31 +4,10 @@ import { currentUser } from "@clerk/nextjs/server"
 
 export async function GET(
     request: Request,
-    context: { params: Promise<{ id: string }> }
+    { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = await context.params
-
-        const internship = await prisma.internship.findUnique({
-            where: { id },
-            select: {
-                id: true,
-                title: true,
-                testAssignmentTitle: true,
-                testAssignmentDescription: true,
-                testAssignmentDueDate: true,
-                company: {
-                    select: { id: true, name: true },
-                },
-            },
-        })
-
-        if (!internship) {
-            return NextResponse.json(
-                { error: "Internship not found" },
-                { status: 404 }
-            )
-        }
+        const assignmentId = params.id
 
         const clerkUser = await currentUser()
         if (!clerkUser) {
@@ -40,54 +19,58 @@ export async function GET(
         })
 
         if (!dbUser) {
-            return NextResponse.json({ error: "User not found in database" }, { status: 404 })
+            return NextResponse.json(
+                { error: "User not found in database" },
+                { status: 404 }
+            )
         }
 
-        // 🧩 Access control
-        if (dbUser.role === "STUDENT") {
-            const hasApplied = await prisma.application.findFirst({
-                where: {
-                    studentId: dbUser.id,
-                    internshipId: internship.id,
+        // ✅ Fetch ASSIGNMENT by assignmentId
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: assignmentId },
+            include: {
+                internship: {
+                    include: {
+                        company: true,
+                    },
                 },
-            })
+            },
+        })
 
-            if (!hasApplied) {
+        if (!assignment) {
+            return NextResponse.json(
+                { error: "Assignment not found" },
+                { status: 404 }
+            )
+        }
+
+        // 🧩 Access Control
+        if (dbUser.role === "STUDENT") {
+            if (assignment.studentId !== dbUser.id) {
                 return NextResponse.json(
-                    { error: "Forbidden: you haven’t applied to this internship" },
+                    { error: "Forbidden: this is not your assignment" },
                     { status: 403 }
                 )
             }
         }
 
         if (dbUser.role === "COMPANY") {
-            const company = await prisma.company.findFirst({
-                where: { ownerId: dbUser.id },
-            })
-
-            if (!company) {
-                return NextResponse.json({ error: "Company not found" }, { status: 404 })
-            }
-
-            const ownsInternship = await prisma.internship.findFirst({
-                where: { id: internship.id, companyId: company.id },
-            })
-
+            const ownsInternship = assignment.internship.companyId === dbUser.id
             if (!ownsInternship) {
                 return NextResponse.json(
-                    { error: "Forbidden: not your internship" },
+                    { error: "Forbidden: this is not your internship" },
                     { status: 403 }
                 )
             }
         }
 
         return NextResponse.json({
-            id: internship.id,
-            title: internship.testAssignmentTitle,
-            description: internship.testAssignmentDescription,
-            dueDate: internship.testAssignmentDueDate,
-            internshipTitle: internship.title,
-            companyName: internship.company.name,
+            id: assignment.id,
+            title: assignment.title,
+            description: assignment.description,
+            dueDate: assignment.dueDate,
+            internshipTitle: assignment.internship.title,
+            companyName: assignment.internship.company.name,
         })
     } catch (error) {
         console.error("Error fetching assignment:", error)
