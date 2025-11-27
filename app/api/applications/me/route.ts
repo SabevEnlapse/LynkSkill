@@ -20,7 +20,7 @@ export async function GET() {
         if (!student)
             return NextResponse.json({ error: "Student not found" }, { status: 404 })
 
-        // Auto delete expired test-only applications
+        // Delete expired test-only applications
         await prisma.application.deleteMany({
             where: {
                 internship: {
@@ -29,7 +29,6 @@ export async function GET() {
             }
         })
 
-        // Main applications query
         const applications = await prisma.application.findMany({
             where: { studentId: student.id },
             orderBy: { createdAt: "desc" },
@@ -42,7 +41,8 @@ export async function GET() {
                                 name: true,
                                 logo: true
                             }
-                        }
+                        },
+                        assignments: true
                     }
                 },
                 student: {
@@ -57,17 +57,31 @@ export async function GET() {
             }
         })
 
-        // Compute hasUploadedFiles
         const formatted = applications.map(app => {
-            const assignmentsForThisInternship = app.student.assignments.filter(
+            const assignmentsForInternship = app.student.assignments.filter(
                 (a) => a.internshipId === app.internshipId
             )
 
-            const hasUploadedFiles = assignmentsForThisInternship.some(
+            const hasUploadedFiles = assignmentsForInternship.some(
                 (a) => a.submissions.length > 0
             )
 
-            return { ...app, hasUploadedFiles }
+            const assignmentRequired = Boolean(app.internship.testAssignmentTitle)
+
+            const project =
+                assignmentsForInternship.length > 0
+                    ? {
+                          id: assignmentsForInternship[0].id,
+                          title: assignmentsForInternship[0].title
+                      }
+                    : null
+
+            return {
+                ...app,
+                hasUploadedFiles,
+                assignmentRequired,
+                project
+            }
         })
 
         return NextResponse.json(formatted)
