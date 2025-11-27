@@ -1,4 +1,4 @@
-// app/api/company/applications/route.ts
+// app/api/applications/company/route.ts
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
@@ -9,37 +9,27 @@ export async function GET() {
         if (!userId)
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-        // Find the company user
         const companyUser = await prisma.user.findUnique({
             where: { clerkId: userId },
             select: { id: true },
         })
         if (!companyUser)
-            return NextResponse.json(
-                { error: "Company user not found" },
-                { status: 404 }
-            )
+            return NextResponse.json({ error: "Company user not found" }, { status: 404 })
 
-        // Find the company
         const company = await prisma.company.findFirst({
             where: { ownerId: companyUser.id },
             select: { id: true },
         })
         if (!company)
-            return NextResponse.json(
-                { error: "Company not found" },
-                { status: 404 }
-            )
+            return NextResponse.json({ error: "Company not found" }, { status: 404 })
 
-        // Fetch company applications
         const applications = await prisma.application.findMany({
-            where: {
-                internship: { companyId: company.id },
-            },
+            where: { internship: { companyId: company.id } },
             include: {
                 internship: {
                     include: {
                         company: true,
+                        assignments: true
                     },
                 },
                 student: {
@@ -47,35 +37,41 @@ export async function GET() {
                         profile: true,
                         assignments: {
                             include: {
-                                submissions: {
-                                    select: { id: true },
-                                },
-                            },
-                        },
+                                submissions: true
+                            }
+                        }
                     },
                 },
             },
             orderBy: { createdAt: "desc" },
         })
 
-        // Compute hasUploadedFiles
-        const formatted = applications.map((app) => {
-            const hasUploadedFiles = app.student.assignments.some(
-                (a) =>
-                    a.internshipId === app.internshipId &&
-                    a.submissions.length > 0
+        const formatted = applications.map(app => {
+            const assignmentsForInternship = app.student.assignments.filter(
+                (a) => a.internshipId === app.internshipId
             )
 
-            // Detect whether the internship actually has an assignment
+            const hasUploadedFiles = assignmentsForInternship.some(
+                (a) => a.submissions.length > 0
+            )
+
             const assignmentRequired = Boolean(app.internship.testAssignmentTitle)
+
+            const project =
+                assignmentsForInternship.length > 0
+                    ? {
+                          id: assignmentsForInternship[0].id,
+                          title: assignmentsForInternship[0].title
+                      }
+                    : null
 
             return {
                 ...app,
                 hasUploadedFiles,
                 assignmentRequired,
+                project
             }
         })
-
 
         return NextResponse.json(formatted)
     } catch (err) {
