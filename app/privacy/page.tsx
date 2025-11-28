@@ -6,6 +6,7 @@ export default function PrivacyPage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-6">
             <div className="max-w-4xl mx-auto space-y-8">
+
                 {/* Header */}
                 <div className="text-center space-y-4">
                     <div className="flex justify-center">
@@ -13,19 +14,27 @@ export default function PrivacyPage() {
                             <ShieldCheck className="w-12 h-12 text-primary" />
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-balance">Privacy Policy</h1>
+                    <h1 className="text-4xl font-bold text-balance">Privacy Policy – LynkSkill</h1>
                     <p className="text-muted-foreground text-lg">Last updated: January 2025</p>
                 </div>
 
                 {/* Introduction */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Our Commitment to Privacy</CardTitle>
+                        <CardTitle>Privacy for LynkSkill Users</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            We are committed to protecting your personal information and your right to privacy. This Privacy Policy
-                            explains how we collect, use, disclose, and safeguard your information when you use our platform.
+                            LynkSkill is a national digital platform designed to connect students, companies, 
+                            organizations, and schools across Bulgaria. Because we process educational, 
+                            organizational, and potentially sensitive personal information, your privacy 
+                            and data protection are foundational responsibilities for us.
+                        </p>
+
+                        <p className="text-muted-foreground">
+                            This Privacy Policy explains how LynkSkill collects, uses, stores, and safeguards 
+                            your personal information when you create an account, browse the platform, 
+                            apply for internships, publish opportunities, or interact with any LynkSkill service.
                         </p>
                     </CardContent>
                 </Card>
@@ -38,39 +47,44 @@ export default function PrivacyPage() {
                             Information We Collect
                         </CardTitle>
                     </CardHeader>
+
                     <CardContent className="space-y-6 leading-relaxed">
+
+                        {/* Personal Information */}
                         <div>
                             <h3 className="font-semibold text-lg mb-3">Personal Information</h3>
                             <p className="text-muted-foreground mb-3">
-                                We collect personal information that you voluntarily provide to us when registering on the platform:
+                                We collect information you voluntarily provide during registration or when 
+                                completing your profile. Examples include:
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                <li>Name and contact information (email address)</li>
-                                <li>Account credentials (username and password)</li>
-                                <li>Profile information (bio, skills, interests)</li>
-                                <li>Company information (for company accounts)</li>
-                                <li>Date of birth (for student accounts)</li>
+                                <li>Name and email address</li>
+                                <li>Account credentials (via Clerk authentication)</li>
+                                <li>Profile information (skills, bio, school, interests)</li>
+                                <li>Company details for business accounts</li>
+                                <li>Date of birth for student verification</li>
                             </ul>
                         </div>
 
                         <Separator />
 
+                        {/* Automatic data */}
                         <div>
                             <h3 className="font-semibold text-lg mb-3">Automatically Collected Information</h3>
                             <p className="text-muted-foreground mb-3">
-                                When you access our platform, we automatically collect certain information:
+                                When you access LynkSkill, the system may automatically collect:
                             </p>
                             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                                 <li>Device and browser information</li>
-                                <li>IP address and location data</li>
-                                <li>Usage data and analytics</li>
-                                <li>Cookies and similar tracking technologies</li>
+                                <li>IP address and approximate location</li>
+                                <li>Usage behavior and analytics</li>
+                                <li>Cookie data and tracking identifiers</li>
                             </ul>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* How We Use Your Information */}
+                {/* How We Use Data */}
                 <Card className="shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -78,16 +92,18 @@ export default function PrivacyPage() {
                             How We Use Your Information
                         </CardTitle>
                     </CardHeader>
+
                     <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground mb-3">We use the information we collect or receive:</p>
+                        <p className="text-muted-foreground">
+                            LynkSkill uses collected data to:
+                        </p>
                         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                            <li>To facilitate account creation and authentication</li>
-                            <li>To provide and maintain our services</li>
-                            <li>To send administrative information and updates</li>
-                            <li>To improve and personalize user experience</li>
-                            <li>To monitor and analyze usage patterns</li>
-                            <li>To detect and prevent fraud and abuse</li>
-                            <li>To comply with legal obligations</li>
+                            <li>Create and authenticate user accounts</li>
+                            <li>Match students with relevant internships and opportunities</li>
+                            <li>Enable companies and schools to manage and publish listings</li>
+                            <li>Improve platform performance and user experience</li>
+                            <li>Ensure safety and prevent abuse or fraud</li>
+                            <li>Comply with Bulgarian and EU legal obligations (GDPR)</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -100,16 +116,18 @@ export default function PrivacyPage() {
                             Data Security
                         </CardTitle>
                     </CardHeader>
+
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            We implement appropriate technical and organizational security measures to protect your personal
-                            information. However, no electronic transmission over the internet or information storage technology can
-                            be guaranteed to be 100% secure.
+                            LynkSkill implements security measures such as encryption, access control, 
+                            secure authentication through Clerk, and continuous monitoring. However, 
+                            no method of transmission on the internet is fully secure.
                         </p>
+
                         <div className="bg-muted/50 p-4 rounded-lg border border-border">
                             <p className="text-sm">
-                                <strong>Security measures include:</strong> encryption of data in transit and at rest, regular security
-                                audits, access controls, and secure authentication protocols.
+                                <strong>Includes:</strong> encrypted data storage, TLS protection, 
+                                security audits, and role-based access controls.
                             </p>
                         </div>
                     </CardContent>
@@ -123,102 +141,40 @@ export default function PrivacyPage() {
                             Cookies and Tracking
                         </CardTitle>
                     </CardHeader>
+
                     <CardContent className="space-y-4 leading-relaxed">
                         <p className="text-muted-foreground">
-                            We use cookies and similar tracking technologies to track activity on our platform and store certain
-                            information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being
-                            sent.
+                            LynkSkill uses cookies for authentication, session management, and analytics.
                         </p>
-                        <div>
-                            <h3 className="font-semibold mb-2">Types of cookies we use:</h3>
-                            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                                <li>
-                                    <strong>Essential cookies:</strong> Required for the platform to function
-                                </li>
-                                <li>
-                                    <strong>Analytics cookies:</strong> Help us understand how users interact with the platform
-                                </li>
-                                <li>
-                                    <strong>Preference cookies:</strong> Remember your settings and preferences
-                                </li>
-                            </ul>
-                        </div>
-                    </CardContent>
-                </Card>
 
-                {/* GDPR Compliance */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                        <CardTitle>Your Privacy Rights (GDPR)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground mb-3">
-                            If you are a resident of the European Economic Area (EEA), you have certain data protection rights:
-                        </p>
+                        <h3 className="font-semibold mb-2">Types of cookies:</h3>
                         <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                            <li>
-                                <strong>Right to access:</strong> Request copies of your personal data
-                            </li>
-                            <li>
-                                <strong>Right to rectification:</strong> Request correction of inaccurate data
-                            </li>
-                            <li>
-                                <strong>Right to erasure:</strong> Request deletion of your personal data
-                            </li>
-                            <li>
-                                <strong>Right to restrict processing:</strong> Request limitation of data processing
-                            </li>
-                            <li>
-                                <strong>Right to data portability:</strong> Request transfer of your data
-                            </li>
-                            <li>
-                                <strong>Right to object:</strong> Object to our processing of your data
-                            </li>
+                            <li><strong>Essential:</strong> login and session management</li>
+                            <li><strong>Analytics:</strong> usage measurement</li>
+                            <li><strong>Preference:</strong> theme and UI settings</li>
                         </ul>
                     </CardContent>
                 </Card>
 
-                {/* Data Retention */}
+                {/* GDPR */}
                 <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle>Data Retention</CardTitle>
+                        <CardTitle>Your GDPR Rights</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground">
-                            We will retain your personal information only for as long as necessary to fulfill the purposes outlined in
-                            this Privacy Policy, unless a longer retention period is required or permitted by law.
-                        </p>
+                        <p className="text-muted-foreground">EEA users have the following rights:</p>
+                        <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                            <li>Right to access</li>
+                            <li>Right to rectification</li>
+                            <li>Right to erasure</li>
+                            <li>Right to restrict processing</li>
+                            <li>Right to data portability</li>
+                            <li>Right to object</li>
+                        </ul>
                     </CardContent>
                 </Card>
 
-                {/* Third-Party Services */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                        <CardTitle>Third-Party Services</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground">
-                            Our platform may contain links to third-party websites or services that are not operated by us. We have no
-                            control over and assume no responsibility for the content, privacy policies, or practices of any
-                            third-party sites or services.
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* Changes to Policy */}
-                <Card className="shadow-lg">
-                    <CardHeader>
-                        <CardTitle>Changes to This Privacy Policy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 leading-relaxed">
-                        <p className="text-muted-foreground">
-                            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new
-                            Privacy Policy on this page and updating the &quot;Last updated&quot; date.
-                        </p>
-                    </CardContent>
-                </Card>
-
-                {/* Contact Info */}
+                {/* Contact */}
                 <Card className="shadow-lg bg-muted/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -226,16 +182,17 @@ export default function PrivacyPage() {
                             Contact Us
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="leading-relaxed">
+
+                    <CardContent>
                         <p className="text-muted-foreground">
-                            If you have any questions about this Privacy Policy or wish to exercise your privacy rights, please
-                            contact us at{" "}
-                            <a href="mailto:privacy@example.com" className="text-primary underline underline-offset-4">
-                                privacy@example.com
+                            For privacy-related questions, please contact our team at{" "}
+                            <a href="mailto:lynkskillweb@gmail.com" className="text-primary underline underline-offset-4">
+                                lynkskillweb@gmail.com
                             </a>
                         </p>
                     </CardContent>
                 </Card>
+
             </div>
         </div>
     )
