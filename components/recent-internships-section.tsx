@@ -128,7 +128,6 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                         onClick={() => setFilter("all")}
                     >
                         <Layers className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
-                        <Layers className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
                         All
                     </Button>
 
