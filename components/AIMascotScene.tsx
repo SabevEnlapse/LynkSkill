@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { X, Sparkles } from "lucide-react"
+import { MarkdownRenderer } from "./MarkdownRenderer"
 
 interface AIMascotSceneProps {
     aiReply?: string
@@ -73,7 +74,7 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                                     <Sparkles className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-semibold text-foreground">AI Assistant</h2>
+                                    <h2 className="text-lg font-semibold text-foreground">AI Portfolio Report</h2>
                                     <p className="text-xs text-muted-foreground">Powered by Linky</p>
                                 </div>
                             </div>
@@ -145,7 +146,7 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                                             className="w-2 h-2 rounded-full animate-pulse"
                                             style={{ backgroundColor: "var(--portfolio-hero-from)" }}
                                         />
-                                        <span>Analysis & Recommendations</span>
+                                        <span>Portfolio Analysis & Recommendations</span>
                                     </div>
 
                                     {/* Message content */}
@@ -165,37 +166,37 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                                                 }}
                                             />
 
-                                            <div className="relative prose prose-sm md:prose-base max-w-none dark:prose-invert">
-                                                <div className="text-foreground/90 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                                                    {aiReply || (
-                                                        <div className="flex items-center gap-3 text-muted-foreground">
-                                                            <div className="flex gap-1">
-                                                                <div
-                                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                                    style={{
-                                                                        backgroundColor: "var(--portfolio-hero-from)",
-                                                                        animationDelay: "0ms",
-                                                                    }}
-                                                                />
-                                                                <div
-                                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                                    style={{
-                                                                        backgroundColor: "var(--portfolio-hero-to)",
-                                                                        animationDelay: "150ms",
-                                                                    }}
-                                                                />
-                                                                <div
-                                                                    className="w-2 h-2 rounded-full animate-bounce"
-                                                                    style={{
-                                                                        backgroundColor: "var(--portfolio-hero-from)",
-                                                                        animationDelay: "300ms",
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <span>Analyzing your portfolio...</span>
+                                            <div className="text-foreground/90 leading-relaxed text-sm md:text-base">
+                                                {aiReply ? (
+                                                    <MarkdownRenderer content={aiReply} />
+                                                ) : (
+                                                    <div className="flex items-center gap-3 text-muted-foreground">
+                                                        <div className="flex gap-1">
+                                                            <div
+                                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                                style={{
+                                                                    backgroundColor: "var(--portfolio-hero-from)",
+                                                                    animationDelay: "0ms",
+                                                                }}
+                                                            />
+                                                            <div
+                                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                                style={{
+                                                                    backgroundColor: "var(--portfolio-hero-to)",
+                                                                    animationDelay: "150ms",
+                                                                }}
+                                                            />
+                                                            <div
+                                                                className="w-2 h-2 rounded-full animate-bounce"
+                                                                style={{
+                                                                    backgroundColor: "var(--portfolio-hero-from)",
+                                                                    animationDelay: "300ms",
+                                                                }}
+                                                            />
                                                         </div>
-                                                    )}
-                                                </div>
+                                                        <span>Analyzing your portfolio...</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -204,7 +205,7 @@ export default function AIMascotScene({ aiReply, onClose }: AIMascotSceneProps) 
                         </div>
 
                         <div className="bg-card border-t border-border/50 px-6 py-4 flex items-center justify-between">
-                            <p className="text-xs text-muted-foreground">Feedback generated by AI • Review carefully</p>
+                            <p className="text-xs text-muted-foreground">Report generated by AI • Review carefully</p>
                             <Button
                                 onClick={handleClose}
                                 className="px-6 rounded-full font-medium shadow-sm text-white border-0"

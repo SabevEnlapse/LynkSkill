@@ -216,6 +216,7 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
     const [aiReply, setAiReply] = useState<string | null>(null)
     const [loadingAi, setLoadingAi] = useState(false)
     const [showMascot, setShowMascot] = useState(false)
+    const [isGenerating, setIsGenerating] = useState(false)
 
     const { user } = useUser()
 
@@ -590,14 +591,34 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                     <Button
                                         onClick={async () => {
-                                            if (!portfolio) return
-                                            setLoadingAi(true)
+                                            if (!portfolio || isGenerating) return
+                                            setIsGenerating(true)
                                             try {
+                                                // Convert portfolio data to match backend expectations
+                                                const portfolioPayload = {
+                                                    fullName: portfolio?.fullName || user?.fullName || "Student",
+                                                    headline: portfolio?.headline || null,
+                                                    bio: portfolio?.bio || null,
+                                                    skills: portfolio?.skills?.join(", ") || null,
+                                                    projects: portfolio?.projects?.map(p =>
+                                                        `${p.title}: ${p.description}${p.link ? ` (${p.link})` : ""}${p.techStack ? ` [${p.techStack.join(", ")}]` : ""}`
+                                                    ).join("\n\n") || null,
+                                                    experience: portfolio?.experience || null,
+                                                    education: portfolio?.education?.map(e =>
+                                                        `${e.school} - ${e.degree}${e.startYear ? ` (${e.startYear}${e.endYear ? `-${e.endYear}` : "-Present"})` : ""}`
+                                                    ).join("\n") || null,
+                                                    linkedin: portfolio?.linkedin || null,
+                                                    github: portfolio?.github || null,
+                                                    portfolioUrl: portfolio?.portfolioUrl || null,
+                                                }
+
                                                 const res = await fetch("/api/assistant", {
                                                     method: "POST",
                                                     headers: { "Content-Type": "application/json" },
                                                     body: JSON.stringify({
-                                                        message: `Give constructive portfolio improvement tips for this student: ${JSON.stringify(portfolio, null, 2)}`,
+                                                        type: "portfolio-audit",
+                                                        portfolio: portfolioPayload,
+                                                        studentId: user?.id
                                                     }),
                                                 })
                                                 const data = await res.json()
@@ -608,15 +629,15 @@ export function Portfolio({ userType }: { userType: "Student" | "Company" }) {
                                                 setAiReply("Something went wrong while getting recommendations.")
                                                 setShowMascot(true)
                                             } finally {
-                                                setLoadingAi(false)
+                                                setIsGenerating(false)
                                             }
                                         }}
-                                        disabled={loadingAi}
+                                        disabled={loadingAi || isGenerating}
                                         className="w-full mt-4 rounded-[1.5rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-8 font-bold text-xl shadow-2xl hover:shadow-purple-500/50 transition-all duration-300"
                                         size="lg"
                                     >
                                         <Sparkles className="mr-3 h-6 w-6" />
-                                        {loadingAi ? "Thinking..." : "Ask Linky for Feedback"}
+                                        {loadingAi || isGenerating ? "Thinking..." : "Ask Linky for Feedback"}
                                     </Button>
                                 </motion.div>
                             </motion.div>
