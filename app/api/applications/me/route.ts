@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic" // Auth requires dynamic rendering
 
 export async function GET() {
     try {
@@ -20,36 +20,29 @@ export async function GET() {
         if (!student)
             return NextResponse.json({ error: "Student not found" }, { status: 404 })
 
-        // Delete expired test-only applications
-        await prisma.application.deleteMany({
-            where: {
-                internship: {
-                    testAssignmentDueDate: { lt: new Date() }
-                }
-            }
-        })
+        // NOTE: Cleanup of expired applications moved to a separate cron/cleanup endpoint
+        // to avoid slow queries on every GET request
 
         const applications = await prisma.application.findMany({
             where: { studentId: student.id },
             orderBy: { createdAt: "desc" },
-            include: {
+            take: 50, // Limit results for better performance
+            select: {
+                id: true,
+                createdAt: true,
+                status: true,
+                studentId: true,
+                internshipId: true,
                 internship: {
-                    include: {
+                    select: {
+                        id: true,
+                        title: true,
+                        testAssignmentTitle: true,
                         company: {
                             select: {
                                 id: true,
                                 name: true,
                                 logo: true
-                            }
-                        },
-                        assignments: true
-                    }
-                },
-                student: {
-                    include: {
-                        assignments: {
-                            include: {
-                                submissions: true
                             }
                         }
                     }
@@ -57,13 +50,24 @@ export async function GET() {
             }
         })
 
-        const formatted = applications.map((app: typeof applications[0]) => {
-            const assignmentsForInternship = app.student.assignments.filter(
-                (a: { internshipId: string }) => a.internshipId === app.internshipId
+        // Get assignments separately for better query performance
+        const studentAssignments = await prisma.assignment.findMany({
+            where: { studentId: student.id },
+            select: {
+                id: true,
+                title: true,
+                internshipId: true,
+                submissions: { select: { id: true }, take: 1 }
+            }
+        })
+
+        const formatted = applications.map((app) => {
+            const assignmentsForInternship = studentAssignments.filter(
+                (a) => a.internshipId === app.internshipId
             )
 
             const hasUploadedFiles = assignmentsForInternship.some(
-                (a: { submissions: { id: string }[] }) => a.submissions.length > 0
+                (a) => a.submissions.length > 0
             )
 
             const assignmentRequired = Boolean(app.internship.testAssignmentTitle)
@@ -83,7 +87,6 @@ export async function GET() {
                 project
             }
         })
-
 
         return NextResponse.json(formatted)
     } catch (err) {

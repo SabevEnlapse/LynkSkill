@@ -27,12 +27,16 @@ import {
     Layers,
     FileText, Mail
 } from 'lucide-react'
+import { useDashboard } from "@/lib/dashboard-context"
 
 interface ApplicationsTabContentProps {
     userType: "Student" | "Company"
 }
 
 export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps) {
+    // Use context for initial data
+    const { applications: contextApplications, isLoadingApplications, mutateApplications } = useDashboard()
+    
     const [applications, setApplications] = useState<Application[]>([])
     const [loading, setLoading] = useState(true)
     const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
@@ -58,40 +62,25 @@ export function ApplicationsTabContent({ userType }: ApplicationsTabContentProps
         } | null
     } | null>(null)
 
-
-
-
     const [refreshing, setRefreshing] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
 
-    const loadApplications = useCallback(async () => {
-        setLoading(true)
-        const url = userType === "Student" ? "/api/applications/me" : "/api/applications/company"
-
-        const res = await fetch(url)
-        if (res.ok) {
-            const data: Application[] = await res.json()
-
-            setApplications(
-                data.map(app => ({
-                    ...app,
-                    assignmentRequired: Boolean(app.assignmentRequired),
-                    hasUploadedFiles: Boolean(app.hasUploadedFiles)
-                }))
-            )
-        }
-        setLoading(false)
-    }, [userType])
-
-
+    // Initialize from context
     useEffect(() => {
-        loadApplications()
-    }, [loadApplications])
+        if (contextApplications.length > 0 || !isLoadingApplications) {
+            setApplications(contextApplications.map(app => ({
+                ...app,
+                assignmentRequired: Boolean((app as Application).assignmentRequired),
+                hasUploadedFiles: Boolean((app as Application).hasUploadedFiles)
+            })) as Application[])
+            setLoading(false)
+        }
+    }, [contextApplications, isLoadingApplications])
 
     async function handleRefresh() {
         setRefreshing(true)
-        await loadApplications()
+        await mutateApplications()
         setRefreshing(false)
     }
 

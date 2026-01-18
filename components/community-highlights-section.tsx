@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Download, Sparkles, Users, TrendingUp, ShieldAlert, ShieldCheck, Layers } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,6 +16,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
+import { useDashboard } from "@/lib/dashboard-context"
 
 type GroupedExperience = {
     id: string
@@ -33,27 +34,15 @@ interface CommunityHighlightsProps {
 }
 
 export function CommunityHighlights({ setActiveTab }: CommunityHighlightsProps) {
-    const [experiences, setExperiences] = useState<GroupedExperience[]>([])
-    const [loading, setLoading] = useState(true)
+    // Use centralized context - no more individual fetches
+    const { recentExperiences, isLoadingExperiences } = useDashboard()
+    
+    const experiences = recentExperiences as GroupedExperience[]
+    const loading = isLoadingExperiences
+    
     const [selectedFile, setSelectedFile] = useState<{ url: string } | null>(null)
     const [scanProgress, setScanProgress] = useState(0)
     const [scanStatus, setScanStatus] = useState<"idle" | "scanning" | "safe" | "danger">("idle")
-
-    useEffect(() => {
-        const fetchFiles = async () => {
-            try {
-                const res = await fetch("/api/experience/recent-files")
-                const data = await res.json()
-                if (!res.ok) throw new Error(data.error || "Failed to fetch recent files")
-                setExperiences(data)
-            } catch (err) {
-                console.error("RecentFilesSection error:", err)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchFiles()
-    }, [])
 
     const getFileType = (url: string) => (url.match(/\.(mp4|mov|avi)$/) ? "Video" : "Image")
 

@@ -3,6 +3,9 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic" // Auth requires dynamic rendering
+
 export async function GET() {
     try {
         const { userId } = await auth()

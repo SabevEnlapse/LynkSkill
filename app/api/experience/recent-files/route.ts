@@ -2,7 +2,8 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-export const revalidate = 60;
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic" // Auth requires dynamic rendering
 
 export async function GET() {
     try {
@@ -11,14 +12,27 @@ export async function GET() {
 
         const user = await prisma.user.findUnique({
             where: { clerkId: userId },
-            include: { companies: true },
+            select: { 
+                id: true, 
+                role: true,
+                companies: { select: { id: true } }
+            },
         })
         if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
 
         const experiences = await prisma.experience.findMany({
-            where: user.role === "STUDENT" ? { studentId: user.id } : { companyId: { in: user.companies.map((c) => c.id) } },
+            where: user.role === "STUDENT" 
+                ? { studentId: user.id } 
+                : { companyId: { in: user.companies.map((c) => c.id) } },
             orderBy: { createdAt: "desc" },
             take: 4, // Take only 4 most recent experiences
+            select: {
+                id: true,
+                mediaUrls: true,
+                createdAt: true,
+                uploaderName: true,
+                uploaderImage: true
+            }
         })
 
         const groupedExperiences = experiences.map((exp) => ({

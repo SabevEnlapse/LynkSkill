@@ -1,13 +1,14 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { Clock, Building2, ArrowRight, Calendar, User, Target, CheckCircle2, AlertCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useDashboard } from "@/lib/dashboard-context"
 
 type ApiProject = {
     id: string
@@ -33,30 +34,29 @@ interface ActiveProjectsSectionProps {
 }
 
 export function ActiveAssignmentsSection({ setActiveTab }: ActiveProjectsSectionProps) {
-    const [projects, setProjects] = useState<ApiProject[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    // Use centralized context - no more individual fetches
+    const { projects: contextProjects, isLoadingProjects } = useDashboard()
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const res = await fetch("/api/projects")
-                const data = await res.json()
-                if (Array.isArray(data)) {
-                    setProjects(data)
-                } else {
-                    console.error("Unexpected response:", data)
-                    setProjects([])
-                }
-            } catch (err) {
-                console.error("Failed to fetch projects:", err)
-                setProjects([])
-            } finally {
-                setIsLoading(false)
-            }
-        }
+    // Transform context projects to match expected ApiProject type
+    const projects = useMemo(() => {
+        return contextProjects.map(p => ({
+            id: p.id,
+            internship: {
+                title: p.internship.title,
+                company: p.internship.company,
+                startDate: p.internship.startDate ?? null,
+                endDate: p.internship.endDate ?? null,
+            },
+            student: { 
+                name: p.student.profile?.name || p.student.email, 
+                email: p.student.email 
+            },
+            status: (p.application?.status === "APPROVED" ? "ONGOING" : "PENDING") as "ONGOING" | "COMPLETED" | "PENDING",
+            createdAt: p.createdAt,
+        })) as ApiProject[]
+    }, [contextProjects])
 
-        load()
-    }, [])
+    const isLoading = isLoadingProjects
 
     const getStatusColor = (status: string) => {
         switch (status) {

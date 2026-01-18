@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState, useCallback } from "react"
+import { useState, useMemo } from "react"
 import type { Internship } from "@/app/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,7 @@ import InternshipDetailsModal from "@/components/internship-details-modal"
 import { Input } from "@/components/ui/input"
 import { Layers, Clock, Search, RefreshCw, Trash2, MapPin, GraduationCap, DollarSign, Timer, BookOpen, Wrench, Building2, Briefcase, CheckCircle2, XCircle, Clock3, ArrowRight, Sparkles, Calendar, FileText } from 'lucide-react'
 import ApplyButton from "@/components/ApplyBtn"
+import { useDashboard } from "@/lib/dashboard-context"
 
 interface Application {
     id: string
@@ -24,51 +25,33 @@ interface RecentAppsSectionProps {
 }
 
 export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsSectionProps) {
-    const [isLoading, setIsLoading] = useState(true)
+    // Use centralized context - no more individual fetches
+    const { 
+        internships: contextInternships, 
+        applications: contextApplications,
+        isLoadingInternships,
+        isLoadingApplications,
+        mutateInternships,
+        mutateApplications
+    } = useDashboard()
+
     const [refreshing, setRefreshing] = useState(false)
-
-    const [internships, setInternships] = useState<Internship[]>([])
-    const [applications, setApplications] = useState<Application[]>([])
     const [selectedInternship, setSelectedInternship] = useState<Internship | null>(null)
-
     const [open, setOpen] = useState(false)
     const [selected, setSelected] = useState<Internship | null>(null)
-
     const [searchQuery, setSearchQuery] = useState("")
     const [filter, setFilter] = useState<"all" | "recent">("all")
-
     const [displayCount, setDisplayCount] = useState(6)
 
-    const loadData = useCallback(async () => {
-        try {
-            const resInternships = await fetch("/api/internships")
-            if (resInternships.ok) {
-                const data = await resInternships.json()
-                setInternships(data)
-            }
-
-            if (userType === "Student") {
-                const resApps = await fetch("/api/applications/me")
-                if (resApps.ok) {
-                    const data = await resApps.json()
-                    setApplications(data)
-                }
-            }
-        } catch (err) {
-            console.error("Failed to fetch data", err)
-        } finally {
-            setIsLoading(false)
-            setRefreshing(false)
-        }
-    }, [userType])
-
-    useEffect(() => {
-        loadData()
-    }, [loadData])
+    // Use context data instead of local state
+    const internships = contextInternships as Internship[]
+    const applications = contextApplications as Application[]
+    const isLoading = isLoadingInternships
 
     const handleRefresh = async () => {
         setRefreshing(true)
-        await loadData()
+        await Promise.all([mutateInternships(), mutateApplications()])
+        setRefreshing(false)
     }
 
     const searchLower = searchQuery.toLowerCase()
@@ -388,10 +371,8 @@ export function RecentInternshipsSection({ userType, setActiveTab }: RecentAppsS
                                                                     internshipId={item.id}
                                                                     goToPortfolioTab={() => setActiveTab?.("apps")}
                                                                     onApplied={() => {
-                                                                        fetch("/api/applications/me")
-                                                                            .then((res) => res.json())
-                                                                            .then((data) => setApplications(data))
-                                                                            .catch((err) => console.error(err))
+                                                                        // Revalidate applications via SWR
+                                                                        mutateApplications()
                                                                     }}
                                                                 />
 

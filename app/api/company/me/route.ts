@@ -1,6 +1,9 @@
 import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 
+export const runtime = "nodejs"
+export const revalidate = 60 // Cache for 60 seconds
+
 export async function GET() {
     const { userId } = await auth()
     if (!userId) return new Response("Unauthorized", { status: 401 })

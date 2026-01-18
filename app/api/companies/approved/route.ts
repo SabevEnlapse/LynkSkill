@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic" // Auth requires dynamic rendering
 
 // GET /api/companies/approved - Returns only companies where student has APPROVED applications
 export async function GET() {

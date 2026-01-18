@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Plus, Home, Briefcase, FileText, ClipboardList, Award, Trophy } from "lucide-react"
 import { InternshipModal } from "@/components/internship-modal"
@@ -24,6 +24,7 @@ import type { Internship } from "@/app/types"
 // import {AnalyticsTabContent} from "@/components/analytics-tab-content";
 import { LeaderboardTabContent } from "@/components/leaderboard-tab-content"
 import { MascotScene } from "@/components/MascotScene"
+import { useDashboard } from "@/lib/dashboard-context"
 
 interface DashboardLayoutProps {
     userType: "Student" | "Company"
@@ -34,88 +35,56 @@ export function DashboardLayout({ userType, children }: DashboardLayoutProps) {
     const [activeTab, setActiveTab] = useState("home")
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-    const [isInitialLoading, setIsInitialLoading] = useState(false)
-    const [internships, setInternships] = useState<Internship[]>([])
     const [modalOpen, setModalOpen] = useState(false)
-    const [companyName, setCompanyName] = useState<string | null>(null)
-    const [companyLogo, setCompanyLogo] = useState<string | null>(null)
     const [showMascot, setShowMascot] = useState(false)
-    const [mascotMessage, setMascotMessage] = useState("")
-    const [userName, setUserName] = useState<string | null>(null)
 
+    // Use centralized context instead of local state + multiple fetches
+    const { 
+        user, 
+        company, 
+        internships: contextInternships, 
+        isInitialLoading,
+        mutateInternships 
+    } = useDashboard()
+
+    // Derived state from context
+    const companyName = company?.name ?? null
+    const companyLogo = company?.logo ?? null
+    const userName = user?.profile?.name ?? null
+
+    // Local state for internships that can be mutated (for create/update/delete)
+    const [localInternships, setLocalInternships] = useState<Internship[]>([])
+    
+    // Sync context internships to local state
     useEffect(() => {
-        async function checkIntro() {
-            const res = await fetch("/api/user/me")
-            if (res.ok) {
-                const data = await res.json()
-
-                if (!data.introShown) {
-                    if (data.role === "STUDENT") {
-                        const username = data.profile?.name || "Student"
-                        setUserName(username)
-                    } else if (data.role === "COMPANY") {
-                        const companyRes = await fetch("/api/company/me")
-                        if (companyRes.ok) {
-                            const company = await companyRes.json()
-                            setCompanyName(company.name)
-                        }
-                    }
-
-                    setShowMascot(true)
-                }
-            }
+        if (contextInternships.length > 0) {
+            setLocalInternships(contextInternships as Internship[])
         }
+    }, [contextInternships])
 
-        checkIntro()
-    }, [])
-
-    // ✅ Fetch internships
+    // Check if intro should be shown (using cached user data)
     useEffect(() => {
-        async function loadInternships() {
-            const res = await fetch("/api/internships")
-            if (res.ok) {
-                const data: Internship[] = await res.json()
-                setInternships(data)
-            }
+        if (user && !user.introShown) {
+            setShowMascot(true)
         }
-
-        loadInternships()
-    }, [])
+    }, [user])
 
     function handleCreateInternship(newInternship: Internship) {
-        setInternships((prev) => [newInternship, ...prev])
+        setLocalInternships((prev) => [newInternship, ...prev])
+        // Also update the context cache
+        mutateInternships()
     }
-
-    // ✅ Fetch company info
-    useEffect(() => {
-        async function loadCompany() {
-            try {
-                const res = await fetch("/api/company/me")
-                if (res.ok) {
-                    const data = await res.json()
-                    setCompanyName(data.name)
-                    setCompanyLogo(data.logo)
-                }
-            } catch (err) {
-                console.error("Error loading company:", err)
-            }
-        }
-
-        if (userType === "Company") {
-            loadCompany()
-        }
-    }, [userType])
 
     // ✅ Listen for internship events from children
     useEffect(() => {
         function handleDeleted(e: Event) {
             const customEvent = e as CustomEvent<string>
-            setInternships((prev) => prev.filter((i) => i.id !== customEvent.detail))
+            setLocalInternships((prev) => prev.filter((i) => i.id !== customEvent.detail))
         }
 
         function handleUpdated(e: Event) {
             const customEvent = e as CustomEvent<Internship>
-            setInternships((prev) => prev.map((i) => (i.id === customEvent.detail.id ? customEvent.detail : i)))
+            setLocalInternships((prev) => prev.map((i) => (i.id === customEvent.detail.id ? customEvent.detail : i)))
         }
 
         window.addEventListener("internshipDeleted", handleDeleted)

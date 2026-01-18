@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Calendar,
@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import type { Application } from "@/app/types"
+import { useDashboard } from "@/lib/dashboard-context"
 
 interface RecentApplicationsSectionProps {
   userType: "Student" | "Company"
@@ -24,38 +25,17 @@ export function RecentApplicationsSection({
                                             userType,
                                             setActiveTab,
                                           }: RecentApplicationsSectionProps) {
-  const [applications, setApplications] = useState<Application[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  // Use centralized context - no more individual fetches
+  const { applications: contextApplications, isLoadingApplications } = useDashboard()
 
-  useEffect(() => {
-    async function fetchApps() {
-      try {
-        const res = await fetch(
-            userType === "Student"
-                ? "/api/applications/me"
-                : "/api/applications/company"
-        )
-        if (!res.ok) throw new Error("Failed to load apps")
-        const data = await res.json()
+  // Sort and take max 3 from context data
+  const applications = useMemo(() => {
+    return [...contextApplications]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 3) as Application[]
+  }, [contextApplications])
 
-        // sort by date (newest first) and take max 3
-        const sorted = data
-            .sort(
-                (a: Application, b: Application) =>
-                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            )
-            .slice(0, 3)
-
-        setApplications(sorted)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchApps()
-  }, [userType])
+  const isLoading = isLoadingApplications
 
   const getStatusConfig = (status: string) => {
     switch (status) {

@@ -54,24 +54,6 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.next();
     }
 
-    // ✅ Sync Clerk user with Supabase if logged in
-    if (userId) {
-        try {
-            const syncResponse = await fetch(`${req.nextUrl.origin}/api/sync-users`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, sessionClaims }),
-            });
-
-            if (!syncResponse.ok) {
-                console.warn("Failed to sync user:", await syncResponse.text());
-            }
-        } catch (error) {
-            // Silently fail - the sync will be retried on the next request
-            console.warn("Sync users fetch error:", error);
-        }
-    }
-
     // ✅ Redirect guests to "/"
     if (!userId && !isPublicRoute(req)) {
         return NextResponse.redirect(new URL("/", req.url));

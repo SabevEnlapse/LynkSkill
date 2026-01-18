@@ -1,14 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { clerkClient } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic" // Uses request.url
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
-        const limit = parseInt(searchParams.get("limit") || "50");
-        const offset = parseInt(searchParams.get("offset") || "0");
+        const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
+        const offset = parseInt(req.nextUrl.searchParams.get("offset") || "0");
 
         // 1️⃣ Fetch paginated students from Prisma
         const students = await prisma.user.findMany({

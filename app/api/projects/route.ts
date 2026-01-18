@@ -6,7 +6,7 @@ import type { Prisma } from "@prisma/client"
 
 // 🔥 Принуждаваме Node runtime (Prisma не работи на Edge)
 export const runtime = "nodejs"
-// 🔥 Забраняваме кеша (иначе Next връща бавен cold start)
+// Auth routes require dynamic rendering
 export const dynamic = "force-dynamic"
 
 // 🔥 Супер важно за Supabase pgBouncer – забранява prepared statements
