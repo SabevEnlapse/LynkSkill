@@ -1,15 +1,19 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { Users, Search, Filter, Loader2, User, Mail, Briefcase, FolderOpen } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Users, Search, Filter, Loader2, User, Mail, Briefcase, FolderOpen, Calendar, X, Send, Video, MapPin, Clock, CheckCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTranslation } from "@/lib/i18n"
 import { useState, useEffect, useCallback } from "react"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 interface Candidate {
     id: string
@@ -27,10 +31,30 @@ interface Candidate {
 
 export default function CandidatesPage() {
     const { t } = useTranslation()
+    const router = useRouter()
     const [candidates, setCandidates] = useState<Candidate[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [debouncedSearch, setDebouncedSearch] = useState("")
+    
+    // Modal states
+    const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
+    const [messageModalOpen, setMessageModalOpen] = useState(false)
+    const [interviewModalOpen, setInterviewModalOpen] = useState(false)
+    const [isSending, setIsSending] = useState(false)
+    const [successMessage, setSuccessMessage] = useState("")
+    
+    // Message form
+    const [messageSubject, setMessageSubject] = useState("")
+    const [messageContent, setMessageContent] = useState("")
+    
+    // Interview form
+    const [interviewDate, setInterviewDate] = useState("")
+    const [interviewTime, setInterviewTime] = useState("")
+    const [interviewDuration, setInterviewDuration] = useState("30")
+    const [interviewType, setInterviewType] = useState("video")
+    const [interviewPosition, setInterviewPosition] = useState("")
+    const [interviewNotes, setInterviewNotes] = useState("")
 
     // Debounce search
     useEffect(() => {
@@ -70,8 +94,116 @@ export default function CandidatesPage() {
         return "from-gray-500 to-slate-500"
     }
 
+    const openMessageModal = (candidate: Candidate) => {
+        setSelectedCandidate(candidate)
+        setMessageSubject(`Opportunity at our company`)
+        setMessageContent("")
+        setMessageModalOpen(true)
+    }
+
+    const openInterviewModal = (candidate: Candidate) => {
+        setSelectedCandidate(candidate)
+        setInterviewDate("")
+        setInterviewTime("")
+        setInterviewDuration("30")
+        setInterviewType("video")
+        setInterviewPosition("")
+        setInterviewNotes("")
+        setInterviewModalOpen(true)
+    }
+
+    const handleSendMessage = async () => {
+        if (!selectedCandidate || !messageContent.trim()) return
+        
+        setIsSending(true)
+        try {
+            const response = await fetch(`/api/candidates/${selectedCandidate.id}/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subject: messageSubject,
+                    message: messageContent
+                })
+            })
+            
+            const data = await response.json()
+            
+            if (data.success) {
+                setSuccessMessage(`Message sent to ${selectedCandidate.name}!`)
+                setMessageModalOpen(false)
+                setTimeout(() => setSuccessMessage(""), 3000)
+            } else {
+                alert(data.error || "Failed to send message")
+            }
+        } catch (error) {
+            console.error("Error sending message:", error)
+            alert("Failed to send message")
+        } finally {
+            setIsSending(false)
+        }
+    }
+
+    const handleSendInterview = async () => {
+        if (!selectedCandidate || !interviewDate || !interviewTime) return
+        
+        setIsSending(true)
+        try {
+            const scheduledAt = new Date(`${interviewDate}T${interviewTime}`)
+            
+            const response = await fetch(`/api/candidates/${selectedCandidate.id}/invite`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    scheduledAt: scheduledAt.toISOString(),
+                    duration: parseInt(interviewDuration),
+                    type: interviewType,
+                    positionTitle: interviewPosition,
+                    notes: interviewNotes
+                })
+            })
+            
+            const data = await response.json()
+            
+            if (data.success) {
+                setSuccessMessage(`Interview invitation sent to ${selectedCandidate.name}!`)
+                setInterviewModalOpen(false)
+                setTimeout(() => setSuccessMessage(""), 3000)
+            } else {
+                alert(data.error || "Failed to send invitation")
+            }
+        } catch (error) {
+            console.error("Error sending invitation:", error)
+            alert("Failed to send invitation")
+        } finally {
+            setIsSending(false)
+        }
+    }
+
+    const viewProfile = (candidateId: string) => {
+        router.push(`/dashboard/company/candidates/${candidateId}`)
+    }
+
+    // Get minimum date (today)
+    const today = new Date().toISOString().split('T')[0]
+
     return (
         <div className="space-y-6">
+            {/* Success Toast */}
+            <AnimatePresence>
+                {successMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg"
+                    >
+                        <CheckCircle className="h-5 w-5" />
+                        {successMessage}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -91,6 +223,7 @@ export default function CandidatesPage() {
                 </div>
             </motion.div>
 
+            {/* Search */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -107,6 +240,7 @@ export default function CandidatesPage() {
                 </Button>
             </div>
 
+            {/* Candidates Grid */}
             {isLoading ? (
                 <div className="flex items-center justify-center py-20">
                     <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
@@ -198,14 +332,34 @@ export default function CandidatesPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex gap-2">
-                                        <Button size="sm" className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
-                                            <User className="h-3.5 w-3.5 mr-1.5" />
-                                            View Profile
-                                        </Button>
-                                        <Button size="sm" variant="outline" className="rounded-xl border-violet-500/30 hover:bg-violet-500/10">
-                                            <Mail className="h-3.5 w-3.5 mr-1.5" />
-                                            Contact
+                                    <div className="space-y-2">
+                                        <div className="flex gap-2">
+                                            <Button 
+                                                size="sm" 
+                                                className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+                                                onClick={() => viewProfile(candidate.id)}
+                                            >
+                                                <User className="h-3.5 w-3.5 mr-1.5" />
+                                                View Profile
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline" 
+                                                className="rounded-xl border-violet-500/30 hover:bg-violet-500/10"
+                                                onClick={() => openMessageModal(candidate)}
+                                            >
+                                                <Mail className="h-3.5 w-3.5 mr-1.5" />
+                                                Message
+                                            </Button>
+                                        </div>
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="w-full rounded-xl border-green-500/30 hover:bg-green-500/10 text-green-600 dark:text-green-400"
+                                            onClick={() => openInterviewModal(candidate)}
+                                        >
+                                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                                            Invite to Interview
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -214,6 +368,214 @@ export default function CandidatesPage() {
                     ))}
                 </div>
             )}
+
+            {/* Message Modal */}
+            <AnimatePresence>
+                {messageModalOpen && selectedCandidate && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                        onClick={() => setMessageModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between p-4 border-b border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-violet-500/10">
+                                        <Mail className="h-5 w-5 text-violet-500" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-semibold">Send Message</h2>
+                                        <p className="text-sm text-muted-foreground">to {selectedCandidate.name}</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => setMessageModalOpen(false)}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <div className="p-4 space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Subject</Label>
+                                    <Input 
+                                        value={messageSubject}
+                                        onChange={(e) => setMessageSubject(e.target.value)}
+                                        placeholder="Subject of your message"
+                                        className="rounded-xl"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Message</Label>
+                                    <Textarea 
+                                        value={messageContent}
+                                        onChange={(e) => setMessageContent(e.target.value)}
+                                        placeholder="Write your message here..."
+                                        className="rounded-xl min-h-[150px] resize-none"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="flex gap-2 p-4 border-t border-border">
+                                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setMessageModalOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600"
+                                    onClick={handleSendMessage}
+                                    disabled={!messageContent.trim() || isSending}
+                                >
+                                    {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                                    Send Message
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Interview Modal */}
+            <AnimatePresence>
+                {interviewModalOpen && selectedCandidate && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                        onClick={() => setInterviewModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between p-4 border-b border-border">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-green-500/10">
+                                        <Calendar className="h-5 w-5 text-green-500" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-semibold">Schedule Interview</h2>
+                                        <p className="text-sm text-muted-foreground">with {selectedCandidate.name}</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => setInterviewModalOpen(false)}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            
+                            <div className="p-4 space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Position Title</Label>
+                                    <Input 
+                                        value={interviewPosition}
+                                        onChange={(e) => setInterviewPosition(e.target.value)}
+                                        placeholder="e.g., Frontend Developer Intern"
+                                        className="rounded-xl"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Date</Label>
+                                        <Input 
+                                            type="date"
+                                            value={interviewDate}
+                                            onChange={(e) => setInterviewDate(e.target.value)}
+                                            min={today}
+                                            className="rounded-xl"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Time</Label>
+                                        <Input 
+                                            type="time"
+                                            value={interviewTime}
+                                            onChange={(e) => setInterviewTime(e.target.value)}
+                                            className="rounded-xl"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Duration</Label>
+                                        <Select value={interviewDuration} onValueChange={setInterviewDuration}>
+                                            <SelectTrigger className="rounded-xl">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="15">15 minutes</SelectItem>
+                                                <SelectItem value="30">30 minutes</SelectItem>
+                                                <SelectItem value="45">45 minutes</SelectItem>
+                                                <SelectItem value="60">1 hour</SelectItem>
+                                                <SelectItem value="90">1.5 hours</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Interview Type</Label>
+                                        <Select value={interviewType} onValueChange={setInterviewType}>
+                                            <SelectTrigger className="rounded-xl">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="video">
+                                                    <span className="flex items-center gap-2">
+                                                        <Video className="h-3.5 w-3.5" /> Video Call
+                                                    </span>
+                                                </SelectItem>
+                                                <SelectItem value="in-person">
+                                                    <span className="flex items-center gap-2">
+                                                        <MapPin className="h-3.5 w-3.5" /> In-Person
+                                                    </span>
+                                                </SelectItem>
+                                                <SelectItem value="phone">
+                                                    <span className="flex items-center gap-2">
+                                                        <Clock className="h-3.5 w-3.5" /> Phone Call
+                                                    </span>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Notes (optional)</Label>
+                                    <Textarea 
+                                        value={interviewNotes}
+                                        onChange={(e) => setInterviewNotes(e.target.value)}
+                                        placeholder="Any additional information for the candidate..."
+                                        className="rounded-xl min-h-[80px] resize-none"
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="flex gap-2 p-4 border-t border-border">
+                                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setInterviewModalOpen(false)}>
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    className="flex-1 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                    onClick={handleSendInterview}
+                                    disabled={!interviewDate || !interviewTime || isSending}
+                                >
+                                    {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                                    Send Invitation
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }
