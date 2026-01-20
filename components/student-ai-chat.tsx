@@ -38,7 +38,9 @@ export function StudentAIChat() {
         setGeneratedPortfolio,
         chatPhase,
         setChatPhase,
-        clearMessages
+        clearMessages,
+        sendWelcomeMessage,
+        welcomeSent
     } = useAIMode()
 
     const [inputValue, setInputValue] = useState("")
@@ -56,17 +58,10 @@ export function StudentAIChat() {
 
     // Send initial greeting when AI mode is activated
     useEffect(() => {
-        if (messages.length === 0 && chatPhase === "intro") {
-            setTimeout(() => {
-                addMessage({
-                    role: "assistant",
-                    content: "👋 Hi there! I'm your AI Career Assistant. I'm here to help you build a professional portfolio and find the perfect internship match!\n\nTell me about yourself - What's your name, what are you studying, and what kind of work interests you? The more you share, the better I can help!",
-                    metadata: { type: "question" }
-                })
-                setChatPhase("gathering")
-            }, 500)
+        if (!welcomeSent) {
+            sendWelcomeMessage("student")
         }
-    }, [messages.length, chatPhase, addMessage, setChatPhase])
+    }, [welcomeSent, sendWelcomeMessage])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

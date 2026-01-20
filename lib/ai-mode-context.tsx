@@ -51,6 +51,8 @@ interface AIModeContextType {
     setGeneratedPortfolio: (portfolio: Record<string, unknown> | null) => void
     chatPhase: "intro" | "gathering" | "portfolio" | "matching" | "results"
     setChatPhase: (phase: "intro" | "gathering" | "portfolio" | "matching" | "results") => void
+    sendWelcomeMessage: (userType: "student" | "company") => void
+    welcomeSent: boolean
 }
 
 const AIModeContext = createContext<AIModeContextType | undefined>(undefined)
@@ -63,6 +65,7 @@ export function AIModeProvider({ children }: { children: ReactNode }) {
     const [studentMatches, setStudentMatches] = useState<StudentMatch[]>([])
     const [generatedPortfolio, setGeneratedPortfolio] = useState<Record<string, unknown> | null>(null)
     const [chatPhase, setChatPhase] = useState<"intro" | "gathering" | "portfolio" | "matching" | "results">("intro")
+    const [welcomeSent, setWelcomeSent] = useState(false)
 
     const toggleAIMode = useCallback(() => {
         setIsAIMode(prev => {
@@ -73,6 +76,7 @@ export function AIModeProvider({ children }: { children: ReactNode }) {
                 setInternshipMatches([])
                 setStudentMatches([])
                 setGeneratedPortfolio(null)
+                setWelcomeSent(false)
             }
             return !prev
         })
@@ -90,7 +94,29 @@ export function AIModeProvider({ children }: { children: ReactNode }) {
     const clearMessages = useCallback(() => {
         setMessages([])
         setChatPhase("intro")
+        setWelcomeSent(false)
     }, [])
+
+    const sendWelcomeMessage = useCallback((userType: "student" | "company") => {
+        if (welcomeSent) return
+        
+        setWelcomeSent(true)
+        
+        const welcomeContent = userType === "company" 
+            ? "👋 Hello! I'm Linky, your AI Talent Scout here at LynkSkill! I'm here to help you find the perfect candidates for your team without manually creating job postings.\n\nJust describe what kind of talent you're looking for - the skills needed, the type of role, experience level, or any specific requirements. I'll search through our student database and find the best matches for you!\n\n💡 Try something like: \"I need a React developer\" or \"Looking for a design intern with Figma skills\""
+            : "👋 Hey there! I'm Linky, your AI Career Assistant here at LynkSkill! 🚀\n\nI'm here to help you build an awesome professional portfolio and find the perfect internship match for your skills and interests.\n\nTell me about yourself - What's your name, what are you studying, and what kind of work excites you? The more you share, the better I can help you stand out!"
+        
+        const newMessage: AIMessage = {
+            id: `msg-welcome-${Date.now()}`,
+            role: "assistant",
+            content: welcomeContent,
+            timestamp: new Date(),
+            metadata: { type: "question" }
+        }
+        
+        setMessages([newMessage])
+        setChatPhase("gathering")
+    }, [welcomeSent])
 
     return (
         <AIModeContext.Provider value={{
@@ -108,7 +134,9 @@ export function AIModeProvider({ children }: { children: ReactNode }) {
             generatedPortfolio,
             setGeneratedPortfolio,
             chatPhase,
-            setChatPhase
+            setChatPhase,
+            sendWelcomeMessage,
+            welcomeSent
         }}>
             {children}
         </AIModeContext.Provider>

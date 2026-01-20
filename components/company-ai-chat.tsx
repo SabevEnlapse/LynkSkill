@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 import { 
     Send, 
     Sparkles, 
@@ -14,7 +15,9 @@ import {
     Search,
     Zap,
     Users,
-    Mail
+    Mail,
+    Radar,
+    Brain
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,13 +39,20 @@ export function CompanyAIChat() {
         setStudentMatches,
         chatPhase,
         setChatPhase,
-        clearMessages
+        clearMessages,
+        sendWelcomeMessage,
+        welcomeSent
     } = useAIMode()
 
     const [inputValue, setInputValue] = useState("")
     const [isTyping, setIsTyping] = useState(false)
+    const [isMatching, setIsMatching] = useState(false)
+    const [matchingProgress, setMatchingProgress] = useState(0)
+    const [matchingStatus, setMatchingStatus] = useState("Initializing...")
+    const [canCloseOverlay, setCanCloseOverlay] = useState(false)
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
+    const matchingStartTime = useRef<number>(0)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -54,17 +64,51 @@ export function CompanyAIChat() {
 
     // Send initial greeting when AI mode is activated
     useEffect(() => {
-        if (messages.length === 0 && chatPhase === "intro") {
-            setTimeout(() => {
-                addMessage({
-                    role: "assistant",
-                    content: "👋 Hello! I'm your AI Talent Scout. I can help you find the perfect candidates for your team without manually creating job postings!\n\nDescribe what kind of talent you're looking for - the skills needed, the type of role, experience level, or any specific requirements. I'll search through our student database and find the best matches for you.",
-                    metadata: { type: "question" }
-                })
-                setChatPhase("gathering")
-            }, 500)
+        if (!welcomeSent) {
+            sendWelcomeMessage("company")
         }
-    }, [messages.length, chatPhase, addMessage, setChatPhase])
+    }, [welcomeSent, sendWelcomeMessage])
+
+    // Simulate matching progress animation - minimum 2.5 seconds
+    const simulateMatchingProgress = async () => {
+        matchingStartTime.current = Date.now()
+        setCanCloseOverlay(false)
+        
+        const statuses = [
+            "Analyzing your requirements...",
+            "Searching student database...",
+            "Scanning portfolios...",
+            "Evaluating skill matches...",
+            "Ranking candidates...",
+            "Finalizing results..."
+        ]
+        
+        // Slower progress for smoother animation (takes ~2.5 seconds)
+        for (let i = 0; i <= 100; i += 2) {
+            await new Promise(resolve => setTimeout(resolve, 50))
+            setMatchingProgress(i)
+            setMatchingStatus(statuses[Math.min(Math.floor((i / 100) * statuses.length), statuses.length - 1)])
+        }
+        
+        setCanCloseOverlay(true)
+    }
+
+    // Smooth close function that ensures minimum display time
+    const closeMatchingOverlay = async () => {
+        const elapsed = Date.now() - matchingStartTime.current
+        const minDisplayTime = 2500 // Minimum 2.5 seconds
+        
+        if (elapsed < minDisplayTime) {
+            await new Promise(resolve => setTimeout(resolve, minDisplayTime - elapsed))
+        }
+        
+        // Smooth exit
+        setMatchingProgress(100)
+        setMatchingStatus("Found matching candidates!")
+        await new Promise(resolve => setTimeout(resolve, 800))
+        setIsMatching(false)
+        setMatchingProgress(0)
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -80,6 +124,17 @@ export function CompanyAIChat() {
 
         setIsLoading(true)
         setIsTyping(true)
+
+        // Check if this message might trigger a search (contains skill-related keywords)
+        const searchKeywords = ["find", "search", "looking for", "need", "want", "hire", "developer", "designer", "engineer", "intern", "student", "candidate"]
+        const mightTriggerSearch = searchKeywords.some(keyword => userMessage.toLowerCase().includes(keyword))
+        
+        // Start matching animation if this looks like a search request
+        if (mightTriggerSearch || chatPhase === "gathering") {
+            setIsMatching(true)
+            setMatchingProgress(0)
+            simulateMatchingProgress()
+        }
 
         try {
             const response = await fetch("/api/assistant/ai-mode", {
@@ -97,6 +152,9 @@ export function CompanyAIChat() {
             })
 
             const data = await response.json()
+
+            // Store response data first, then handle overlay closing
+            const hasMatches = data.matches && data.matches.length > 0
 
             if (data.error) {
                 addMessage({
@@ -119,12 +177,27 @@ export function CompanyAIChat() {
                     setStudentMatches(data.matches)
                 }
             }
+
+            // Close matching overlay smoothly if it was shown
+            if (isMatching) {
+                if (hasMatches) {
+                    setMatchingStatus("Found matching candidates!")
+                } else {
+                    setMatchingStatus("Search complete!")
+                }
+                await closeMatchingOverlay()
+            }
         } catch (error) {
             console.error("AI Mode error:", error)
             addMessage({
                 role: "assistant",
                 content: "I'm having trouble connecting. Please check your connection and try again."
             })
+            // Close overlay on error too
+            if (isMatching) {
+                setMatchingStatus("Please try again")
+                await closeMatchingOverlay()
+            }
         } finally {
             setIsLoading(false)
             setIsTyping(false)
@@ -143,8 +216,141 @@ export function CompanyAIChat() {
         return "from-gray-500 to-slate-500"
     }
 
+    // Matching Animation Overlay Component
+    const MatchingOverlay = () => (
+        <AnimatePresence mode="wait">
+            {isMatching && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md"
+                >
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="relative max-w-md w-full mx-4 p-8 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-cyan-500/10 border border-indigo-500/30 shadow-2xl"
+                    >
+                        {/* AI Mascot */}
+                        <div className="flex flex-col items-center">
+                            <motion.div
+                                className="relative"
+                                animate={{ 
+                                    y: [0, -10, 0],
+                                    rotate: [-5, 5, -5]
+                                }}
+                                transition={{ 
+                                    duration: 2, 
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            >
+                                <div className="relative w-32 h-32">
+                                    <Image
+                                        src="/linky-mascot.png"
+                                        alt="AI Assistant"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                    {/* Pulsing rings around mascot */}
+                                    <motion.div
+                                        className="absolute inset-0 rounded-full border-2 border-indigo-500/50"
+                                        animate={{ scale: [1, 1.5, 1.5], opacity: [0.5, 0, 0] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    />
+                                    <motion.div
+                                        className="absolute inset-0 rounded-full border-2 border-blue-500/50"
+                                        animate={{ scale: [1, 1.3, 1.3], opacity: [0.5, 0, 0] }}
+                                        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {/* Search Animation */}
+                            <div className="mt-6 flex items-center gap-3">
+                                <motion.div
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                >
+                                    <Radar className="w-6 h-6 text-indigo-500" />
+                                </motion.div>
+                                <motion.div
+                                    animate={{ scale: [1, 1.2, 1] }}
+                                    transition={{ duration: 1, repeat: Infinity }}
+                                >
+                                    <Brain className="w-6 h-6 text-blue-500" />
+                                </motion.div>
+                                <motion.div
+                                    animate={{ rotate: [-10, 10, -10] }}
+                                    transition={{ duration: 0.5, repeat: Infinity }}
+                                >
+                                    <Search className="w-6 h-6 text-cyan-500" />
+                                </motion.div>
+                            </div>
+
+                            {/* Status Text */}
+                            <motion.p
+                                key={matchingStatus}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-4 text-lg font-semibold text-foreground text-center"
+                            >
+                                {matchingStatus}
+                            </motion.p>
+
+                            {/* Progress Bar */}
+                            <div className="w-full mt-4">
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                    <motion.div
+                                        className="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-cyan-500"
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${matchingProgress}%` }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                </div>
+                                <p className="text-xs text-muted-foreground text-center mt-2">
+                                    {matchingProgress}% complete
+                                </p>
+                            </div>
+
+                            {/* Floating particles */}
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                                {[...Array(6)].map((_, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="absolute w-2 h-2 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"
+                                        style={{
+                                            left: `${20 + i * 15}%`,
+                                            top: `${Math.random() * 100}%`
+                                        }}
+                                        animate={{
+                                            y: [-20, 20, -20],
+                                            opacity: [0.3, 0.8, 0.3],
+                                            scale: [0.8, 1.2, 0.8]
+                                        }}
+                                        transition={{
+                                            duration: 2 + Math.random() * 2,
+                                            repeat: Infinity,
+                                            delay: i * 0.2
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+
     return (
         <div className="h-full flex flex-col">
+            {/* Matching Animation Overlay */}
+            <MatchingOverlay />
+
             {/* Header */}
             <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-6 md:p-8 backdrop-blur-sm shadow-xl bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-cyan-500/5 border border-indigo-500/20 mb-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-blue-500/5 to-cyan-500/10" />
@@ -243,7 +449,7 @@ export function CompanyAIChat() {
                                 ))}
                             </AnimatePresence>
 
-                            {isTyping && (
+                            {isTyping && !isMatching && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}

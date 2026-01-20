@@ -276,6 +276,41 @@
   }
 }
 
+/* Global cursor pointer for all clickable elements */
+button,
+a,
+[role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+select,
+label[for],
+.cursor-pointer,
+[onclick],
+[data-clickable="true"] {
+  cursor: pointer;
+}
+
+/* Disabled elements should show not-allowed cursor */
+button:disabled,
+a[aria-disabled="true"],
+[role="button"][aria-disabled="true"],
+input:disabled,
+select:disabled,
+.disabled,
+[disabled] {
+  cursor: not-allowed;
+}
+
 @layer components {
   .project-card-enhanced {
     background: linear-gradient(135deg, var(--internship-card-gradient-from), var(--internship-card-gradient-to));
